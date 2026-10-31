@@ -340,10 +340,13 @@ body{letter-spacing:-.015em;-webkit-font-smoothing:antialiased}
 .md{border:1px solid var(--line);box-shadow:0 18px 55px #0002}
 .mb.open{backdrop-filter:blur(3px)}
 @media(max-width:760px){.aria-nav-separator,.aria-collapse{display:none!important}}
+
+/* Rounded triangular mascot silhouette */
+.aria-brand svg path,.aria-nav[data-kind="ai"] .aria-ico svg path{transform-origin:center}
 </style></head><body>
 <div class="integrated-shell">
 <aside class="aria-side" aria-label="Aria 메뉴">
-<div class="aria-brand"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6c13 0 24 13 24 29 0 11-9 21-24 21S8 46 8 35C8 19 19 6 32 6z" fill="currentColor"/><ellipse cx="24" cy="36" rx="3" ry="4.5" fill="#fff"/><ellipse cx="40" cy="36" rx="3" ry="4.5" fill="#fff"/></svg><span>Aria</span></div>
+<div class="aria-brand"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 C44 5 54 16 55 29 C56 41 46 51 34 57 C32.5 57.8 31 57.8 29.5 57 C17 51 8 41 9 29 C10 16 20 5 32 5 Z" fill="currentColor"/><ellipse cx="24" cy="36" rx="3" ry="4.5" fill="#fff"/><ellipse cx="40" cy="36" rx="3" ry="4.5" fill="#fff"/></svg><span>Aria</span></div>
 
 <button class="aria-nav active" data-kind="today" onclick="ariaGo('today')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-7h-4v7H4a1 1 0 0 1-1-1z"/></svg></span><span>대시보드</span><span class="aria-nav-badge" id="ariaWaitBadge" hidden></span></button>
 <button class="aria-nav" data-kind="table" onclick="ariaGo('table')"><span class="aria-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg></span><span>업무 관리</span></button>
@@ -353,7 +356,7 @@ body{letter-spacing:-.015em;-webkit-font-smoothing:antialiased}
 
 <button class="aria-nav" data-kind="schedule" onclick="ariaGo('schedule')"><span class="aria-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>시간 설정</span></button>
 <div class="aria-nav-separator" aria-hidden="true"></div>
-<button class="aria-nav" data-kind="ai" onclick="ariaGo('ai')"><span class="aria-ico"><svg viewBox="0 0 64 64" style="width:22px;height:22px"><path d="M32 6c13 0 24 13 24 29 0 11-9 21-24 21S8 46 8 35C8 19 19 6 32 6z" fill="#3478f6" stroke="none"/><ellipse cx="24" cy="36" rx="3" ry="4.5" fill="#fff" stroke="none"/><ellipse cx="40" cy="36" rx="3" ry="4.5" fill="#fff" stroke="none"/></svg></span><span>AI 비서</span></button>
+<button class="aria-nav" data-kind="ai" onclick="ariaGo('ai')"><span class="aria-ico"><svg viewBox="0 0 64 64" style="width:22px;height:22px"><path d="M32 5 C44 5 54 16 55 29 C56 41 46 51 34 57 C32.5 57.8 31 57.8 29.5 57 C17 51 8 41 9 29 C10 16 20 5 32 5 Z" fill="#3478f6" stroke="none"/><ellipse cx="24" cy="36" rx="3" ry="4.5" fill="#fff" stroke="none"/><ellipse cx="40" cy="36" rx="3" ry="4.5" fill="#fff" stroke="none"/></svg></span><span>AI 비서</span></button>
 <button class="aria-nav" data-kind="archive" onclick="ariaGo('archive')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M3 5h18v4H3zM5 9v11h14V9M9 13h6"/></svg></span><span>보관 업무</span></button>
 <div class="aria-side-bottom"><button class="aria-nav" id="sideThemeBtn" onclick="theme()"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z"/></svg></span><span>화면 테마</span></button><button class="aria-nav" id="sideSyncBtn" onclick="syncUI()"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M7 7a7 7 0 0 1 11.8 2M17 17A7 7 0 0 1 5.2 15M18.8 5.5v4h-4M5.2 18.5v-4h4"/></svg></span><span>기기 동기화</span></button><button id="ariaCollapseBtn" class="aria-collapse" onclick="toggleSidebar()" title="사이드바 접기" aria-label="사이드바 접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button></div>
 </aside>
