@@ -1,11 +1,20 @@
-# Aria 설치 순서
+# Aria Workspace
 
-1. 이 폴더의 파일을 전부 GitHub 저장소(공개)에 올리세요. `.github/workflows/notify.yml` 은 경로 그대로여야 해요.
-   (웹에서는 Add file > Create new file 에서 이름 칸에 `.github/workflows/notify.yml` 이라고 입력하고 내용을 붙여넣으면 폴더가 만들어져요.)
-2. Settings > Pages 에서 main 브랜치를 켜세요. 주소는 https://아이디.github.io/저장소이름/ 이에요.
-3. Settings > Secrets and variables > Actions > New repository secret
-   - 이름 `VAPID_PRIVATE_KEY`, 값 `QSHAQ_jMEA76YUc1Rc42NemwJG4JxcOh5qkjfT3x4Yc`  (남에게 알려 주지 마세요)
-4. 앱 설정에서 구글 캘린더 연결 > 알림 켜기 > 서버 설정값 복사 > 시크릿 `PUSH_1` 로 저장.
-5. Actions 탭 > Aria 알림 > Run workflow 로 테스트.
+현재 서비스는 저장소 최상위의 `index.html`에서 실행됩니다.
 
-아이폰: iOS 16.4 이상, Safari에서 홈 화면에 추가한 뒤 그 아이콘으로 열어서 알림을 켜세요.
+- 서비스 주소: https://affinity-neo.github.io/aria/
+- `index.html`: Aria 디자인과 schedule2 업무·일정 기능을 통합한 메인 앱
+- `gemini.js`: AI 비서 연결 스크립트
+- `manifest.webmanifest`, `sw.js`, `icon-*.png`: Aria 설치 및 알림 관련 파일
+- `archive/aria-original/index.html`: 통합 전 기존 Aria 메인 화면 백업
+- `aria/`: 기존 저장소 내 별도 보관본 (유지)
+
+## 배포 및 복구
+
+GitHub Pages는 main 브랜치의 최상위 폴더를 배포하도록 설정되어 있습니다.
+
+기존 Aria 화면으로 되돌려야 할 경우 `archive/aria-original/index.html`의 내용을 최상위 `index.html`에 복사하면 됩니다. 기존 아이콘·매니페스트 파일은 최상위에 그대로 보존되어 있습니다.
+
+## 알림 서버
+
+기존 알림 워크플로와 서버 파일은 유지했습니다. GitHub Actions Secret 설정은 기존 배포 환경을 따릅니다.
