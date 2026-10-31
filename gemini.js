@@ -19,16 +19,19 @@
     }));
     return {capturedAt:new Date().toISOString(),groups:(S.groups||[]).map(g=>typeof g==="string"?g:g.name).filter(Boolean),tasks};
   }
+  function ariaMascot(size){return '<svg viewBox="0 0 64 64" width="'+size+'" height="'+size+'" aria-hidden="true" style="display:block;flex:none"><path d="M32 5 C44 5 54 16 55 29 C56 41 46 51 34 57 C32.5 57.8 31 57.8 29.5 57 C17 51 8 41 9 29 C10 16 20 5 32 5 Z" fill="#3478f6"/><ellipse cx="24" cy="36" rx="3" ry="4.5" fill="#fff"/><ellipse cx="40" cy="36" rx="3" ry="4.5" fill="#fff"/></svg>';}
+  function cleanAriaReply(value){return String(value||'').replace(/^\s*#{1,6}\s*/gm,'').replace(/\*{1,3}([^*\n]+)\*{1,3}/g,'$1').replace(/(^|\n)\s*\*\s+/g,'$1• ').replace(/(^|\n)\s*#+\s*/g,'$1').replace(/\n{3,}/g,'\n\n').trim();}
   function setChatStyle(){
     const md=document.querySelector(".md");
     if(md){md.style.width="min(760px, 100%)";md.style.height="min(780px, 88vh)";md.style.display="flex";md.style.flexDirection="column";md.style.padding="0";md.style.overflow="hidden";}
   }
   window.openGeminiPanel=function(){
+    const backdrop=$id("mb");if(backdrop&&!backdrop.dataset.ariaBackdropClose){backdrop.dataset.ariaBackdropClose="1";backdrop.addEventListener("click",e=>{if(e.target===backdrop&&$id("ariaChatLog"))closeM();});}
     const savedUrl=localStorage.getItem(URL_KEY)||"";
     modal(
       '<div style="display:flex;flex-direction:column;height:100%;min-height:0;background:var(--sf)">'+
         '<div style="display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)">'+
-          '<div style="width:34px;height:34px;border-radius:12px;background:#2F5DE8;color:white;display:grid;place-items:center;font-weight:800">A</div>'+
+          ariaMascot(34)+
           '<div style="flex:1"><b style="font-size:16px">Aria</b><div style="font-size:11px;color:var(--mu)">업무와 일정을 함께 정리하는 AI 비서</div></div>'+
           '<button onclick="closeM()" aria-label="닫기">✕</button></div>'+
         '<div id="ariaChatLog" style="flex:1;min-height:0;overflow:auto;padding:16px;background:var(--bg)"></div>'+
@@ -59,11 +62,11 @@
   function renderAriaChat(){
     const log=$id("ariaChatLog");if(!log)return;
     const history=readChat();
-    let html='<div style="display:flex;gap:8px;margin-bottom:14px;align-items:flex-end"><div style="width:28px;height:28px;border-radius:50%;background:#2F5DE8;color:white;display:grid;place-items:center;flex:none;font-weight:700">A</div><div style="max-width:86%;background:var(--sf);border:1px solid var(--line);border-radius:16px 16px 16px 5px;padding:11px 14px;line-height:1.6;font-size:13px">안녕하세요! 저는 Aria예요. 업무 이동이나 일정 변경도 평소처럼 말해 주세요. 실제 보드에 반영한 뒤 결과를 알려드릴게요.</div></div>';
+    let html='<div style="display:flex;gap:8px;margin-bottom:14px;align-items:flex-end">'+ariaMascot(28)+'<div style="max-width:86%;background:var(--sf);border:1px solid var(--line);border-radius:16px 16px 16px 5px;padding:11px 14px;line-height:1.6;font-size:13px">안녕하세요! 저는 Aria예요. 업무 이동이나 일정 변경도 평소처럼 말해 주세요. 실제 보드에 반영한 뒤 결과를 알려드릴게요.</div></div>';
     history.forEach(m=>{
       const mine=m.role==="user";
       html+='<div style="display:flex;justify-content:'+(mine?"flex-end":"flex-start")+';gap:8px;margin:10px 0;align-items:flex-end">'+
-        (mine?"":'<div style="width:28px;height:28px;border-radius:50%;background:#2F5DE8;color:white;display:grid;place-items:center;flex:none;font-weight:700">A</div>')+
+        (mine?"":ariaMascot(28))+
         '<div style="max-width:86%;white-space:pre-wrap;overflow-wrap:anywhere;background:'+(mine?"#2F5DE8":"var(--sf)")+';color:'+(mine?"#fff":"var(--tx)")+';border:'+(mine?"0":"1px solid var(--line)")+';border-radius:'+(mine?"16px 16px 5px 16px":"16px 16px 16px 5px")+';padding:11px 14px;line-height:1.65;font-size:13px">'+esc(m.content)+'</div></div>';
     });
     log.innerHTML=html;log.scrollTop=log.scrollHeight;
@@ -120,7 +123,7 @@
       const schedule=snapshot(),history=readChat().slice(-12).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.content}));
       const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"chat",schedule,question,messages:history})});
       const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"AI 요청에 실패했어요.");
-      let reply=String(data.reply||data.text||"");
+      let reply=cleanAriaReply(String(data.reply||data.text||""));
       if(data.action){const result=applyAriaAction(data.action);if(result)reply=result;}
       if(!reply)reply="요청을 처리했어요.";
       if(data.escalated)reply+="\n\n복잡한 요청이라 고성능 모델로 한 번 더 확인했어요.";
