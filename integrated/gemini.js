@@ -85,6 +85,12 @@
       if(matches.length!==1)return commandResult(matches.length?"같은 이름의 업무가 여러 개 있어요.":"담당자를 바꿀 업무를 찾지 못했어요.",false);
       const t=matches[0],person=assignee[1];t.person=person;if(!(S.labels.person||[]).some(x=>x.n===person))S.labels.person.push({n:person,c:"#808080"});save();syncTouch();render();return commandResult("담당자를 변경했어요.\n"+t.task+"\n담당자: "+person);
     }
+    const statusMatch=q.match(/상태(?:를|는)?\s*(진행 전|자료 대기 중|진행 중|1차|2차|수정 중|완료)\s*(?:으로|로)?\s*(?:변경|바꿔|설정)/);
+    if(statusMatch){
+      if(matches.length!==1)return commandResult(matches.length?"같은 이름의 업무가 여러 개 있어요.":"상태를 변경할 업무를 찾지 못했어요.",false);
+      const t=matches[0],next=statusMatch[1];if(!(S.labels.status||[]).some(x=>x.n===next))return commandResult("현재 보드에 ‘"+next+"’ 상태가 없어요.",false);
+      t.status=next;if(next==="완료")t.doneAt=localToday();else t.doneAt="";save();syncTouch();render();return commandResult("상태를 변경했어요.\n"+t.task+"\n상태: "+next);
+    }
     const date=q.match(/(20\d{2}-\d{2}-\d{2})/)?.[1]||(/모레/.test(q)?addLocalDays(2):/내일/.test(q)?addLocalDays(1):/오늘/.test(q)?localToday():"");
     if(date&&/(마감|기한|날짜)/.test(q)){
       if(matches.length!==1)return commandResult(matches.length?"같은 이름의 업무가 여러 개 있어요.":"날짜를 변경할 업무를 찾지 못했어요.",false);
