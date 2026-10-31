@@ -21,7 +21,7 @@ input,textarea{font-size:16px}
 .ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .app{height:100dvh;display:flex;flex-direction:column;max-width:1180px;margin:0 auto;background:var(--bg)}
 main{flex:1;min-height:0;display:flex;flex-direction:column}
-nav{order:2;display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav{order:2;display:grid;grid-template-columns:repeat(6,1fr);background:#fff;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
 nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;font-size:11.5px;color:var(--sub)}
 nav button.on{color:var(--blue);font-weight:600}
 .brand,.gap{display:none}
@@ -157,7 +157,7 @@ nav button.on{background:var(--blue);color:#fff}
 .btn.g{background:var(--soft);color:var(--blue-d)}
 .btn.r{background:#FDECEC;color:var(--red)}
 .bs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-#ts{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13.5px;padding:10px 16px;border-radius:12px;z-index:10;display:none;max-width:90%;text-align:center}
+#p-work{overflow:hidden;background:var(--bg)}\n#p-work iframe{display:block;width:100%;height:100%;min-height:0;flex:1;border:0;background:var(--bg)}\n#ts{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13.5px;padding:10px 16px;border-radius:12px;z-index:10;display:none;max-width:90%;text-align:center}
 textarea{width:100%;height:120px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);font-size:12px;font-family:ui-monospace,Menlo,monospace;margin-top:8px}
 ol.sp{margin:8px 0 0 18px;font-size:14px;line-height:1.7}
 .url{display:flex;gap:8px;margin-top:12px}
@@ -193,6 +193,7 @@ ol.sp{margin:8px 0 0 18px;font-size:14px;line-height:1.7}
   <button class="on" data-a="tab" data-t="dash"><svg class="ic"><use href="#i-grid"/></svg>대시보드</button>
   <button data-a="tab" data-t="todo"><svg class="ic"><use href="#i-todo"/></svg>할 일</button>
   <button data-a="tab" data-t="cal"><svg class="ic"><use href="#i-cal"/></svg>캘린더</button>
+  <button data-a="tab" data-t="work"><svg class="ic"><use href="#i-grid"/></svg>업무 관리</button>
   <button data-a="tab" data-t="chat"><svg class="ic"><use href="#i-chat"/></svg>채팅</button>
   <i class="gap"></i>
   <button data-a="tab" data-t="set"><svg class="ic"><use href="#i-set"/></svg>설정</button>
@@ -201,6 +202,7 @@ ol.sp{margin:8px 0 0 18px;font-size:14px;line-height:1.7}
   <section class="panel on" id="p-dash"><div class="scroll" id="dash"></div></section>
   <section class="panel" id="p-todo"><div class="scroll" id="todo"></div></section>
   <section class="panel" id="p-cal"><div id="cal" style="display:flex;flex-direction:column;flex:1;min-height:0"></div></section>
+  <section class="panel" id="p-work"><iframe title="AffinityNeo 업무 관리" src="https://affinity-neo.github.io/schedule2/?embed=aria" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></section>
   <section class="panel" id="p-chat">
     <div class="scroll" id="chat"></div>
     <div class="cr">
