@@ -11,8 +11,13 @@
   const saveChat=a=>localStorage.setItem(CHAT_KEY,JSON.stringify(a.slice(-60)));
   function snapshot(){
     if(typeof S==="undefined"||!S||!Array.isArray(S.tasks))throw new Error("일정 데이터를 불러오지 못했어요. 새로고침해 주세요.");
-    return {capturedAt:new Date().toISOString(),groups:(S.groups||[]).map(g=>typeof g==="string"?g:g.name).filter(Boolean),
-      tasks:S.tasks.map(t=>({id:t.id,group:t.company||"",task:t.task||"",status:t.status||"",priority:t.priority||"",assignee:t.person||"",deadline:t.due||"",plannedDate:t.planDate||(t.cx&&t.cx.planDate)||"",memo:t.memo||"",subtasks:(t.subs||[]).map(s=>({task:s.task||"",status:s.status||"",deadline:s.due||"")}))})};
+    const tasks=S.tasks.map(t=>({
+      id:t.id,group:t.company||"",task:t.task||"",status:t.status||"",
+      priority:t.priority||"",assignee:t.person||"",deadline:t.due||"",
+      plannedDate:t.planDate||(t.cx&&t.cx.planDate)||"",memo:t.memo||"",
+      subtasks:(t.subs||[]).map(s=>({task:s.task||"",status:s.status||"",deadline:s.due||""}))
+    }));
+    return {capturedAt:new Date().toISOString(),groups:(S.groups||[]).map(g=>typeof g==="string"?g:g.name).filter(Boolean),tasks};
   }
   function setChatStyle(){
     const md=document.querySelector(".md");
