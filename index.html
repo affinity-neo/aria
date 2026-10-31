@@ -227,11 +227,78 @@ body{letter-spacing:-.015em;-webkit-font-smoothing:antialiased}
 .dash-wait-actions button,.dash-inline-setting{font-size:10px;padding:4px 7px;border:1px solid var(--line);border-radius:5px;color:var(--mu)}
 .dash-inline-setting{display:inline-block;margin-left:5px}
 .archive-subhead{font-size:13px;margin:18px 0 8px}.sub-done-toggle{display:none!important}.wait-detail,.course-detail{display:flex;flex-direction:column;gap:10px;padding:12px 0}.course-detail label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mu)}.wait-detail{font-size:13px;line-height:1.6}.wait-detail p{margin:0}
-@media(max-width:760px){.aria-side{justify-content:flex-start}.aria-nav{flex:0 0 76px}.aria-nav-badge{position:absolute;top:2px;right:14px;margin:0;min-width:16px;height:16px;padding:0 4px;font-size:9px}}
+@media(max-width:760px){.aria-side{justify-content:flex-start}.aria-nav{flex:0 0 76px}.aria-nav-badge{position:absolute;top:2px;right:14px;margin:0;min-width:16px;height:16px;padding:0 4px;font-size:9px}.aria-collapse{display:none!important}}
+/* Dashboard focus layout, daily routines, quick-memo actions and compact sidebar */
+.integrated-shell.sidebar-collapsed{grid-template-columns:76px minmax(0,1fr)}
+.aria-brand{position:relative;padding-right:38px}
+.aria-brand small{display:none!important}
+.aria-collapse{position:absolute;right:3px;top:5px;width:28px;height:28px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--sf);color:var(--mu);font-size:22px;line-height:1}
+.aria-collapse:hover{background:var(--sf2);color:var(--tx)}
+.sidebar-collapsed .aria-side{padding-left:8px;padding-right:8px;align-items:center}
+.sidebar-collapsed .aria-brand{width:100%;height:56px;justify-content:center;padding:0 0 10px;margin-bottom:10px}
+.sidebar-collapsed .aria-brand>span{display:none}
+.sidebar-collapsed .aria-brand svg{width:30px}
+.sidebar-collapsed .aria-collapse{right:0;top:auto;bottom:5px;width:23px;height:23px;font-size:17px}
+.sidebar-collapsed .aria-nav-label{display:none}
+.sidebar-collapsed .aria-nav{width:48px;min-width:48px;justify-content:center;padding:10px 4px;gap:0}
+.sidebar-collapsed .aria-nav>span:not(.aria-ico):not(.aria-nav-badge){display:none}
+.sidebar-collapsed .aria-nav-badge{position:absolute;top:0;right:0;min-width:16px;height:16px;padding:0 3px;font-size:9px}
+.sidebar-collapsed .aria-side-bottom{width:100%;display:flex;flex-direction:column;align-items:center}
+.sidebar-collapsed .aria-user{justify-content:center;padding:10px 0}
+.sidebar-collapsed .aria-user>span:not(.aria-avatar){display:none}
+.dash-hero p,.dash-section-head p,.dash-stat small{display:none!important}
+.dash-hero{align-items:center}
+.dash-routine-actions{display:flex;gap:8px;flex-wrap:wrap}
+.dash-routine-actions button{background:#ffffff18;border:1px solid #ffffff45;color:#fff;border-radius:8px;padding:9px 12px;font-size:12px}
+.dash-routine-actions button:hover{background:#ffffff28}
+.dash-stats .wait-stat{position:relative;text-align:left;width:100%;background:var(--sf);border:1px solid var(--line)}
+.dash-stats .wait-stat b{color:#a25ddc}
+.wait-alert-dot{position:absolute;right:17px;top:17px;width:9px;height:9px;border-radius:50%;background:#e2445c;box-shadow:0 0 0 4px #e2445c22}
+.dash-week .week-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.dash-grid-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
+.dash-grid-row .dash-section{min-width:0}
+.plan-today .dash-section-head h3{color:var(--blue)}
+.deadline-today{border:2px solid #e2445c;background:#fff7f7}
+.deadline-today .dash-section-head h3{color:#d92f4d;font-weight:800}
+.deadline-today .dash-count{background:#e2445c;color:white}
+.deadline-today .dash-task{border-color:#f0c0c8;background:#fff}
+.deadline-today .dash-task b{color:#b91f3c}
+.plan-late .dash-count,.deadline-late .dash-count{background:#fff0d9;color:#a96808}
+.course-dash-section{margin-top:14px}
+.course-dash-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.course-dash-card{display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);min-width:0}
+.course-dash-main{display:grid;gap:5px;min-width:0;flex:1;text-align:left;padding:0}
+.course-dash-main b{font-size:12px;overflow-wrap:anywhere}
+.course-dash-main span{font-size:10px;color:var(--mu)}
+.course-dash-edit,.course-add-btn{border:1px solid var(--line);border-radius:7px;background:var(--sf);font-size:11px}
+.course-create{display:grid;gap:12px}
+.course-create>label,.course-create-grid label{display:grid;gap:5px;font-size:12px;color:var(--mu)}
+.course-create-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.routine-modal{width:min(680px,100%);display:grid;gap:12px}
+.routine-modal>p{margin:0;color:var(--mu);font-size:12px}
+.routine-section{padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.routine-section h3{font-size:13px;margin:0 0 9px}
+.routine-check{display:flex;align-items:center;gap:9px;padding:8px 3px;border-top:1px solid var(--line);font-size:12px}
+.routine-check input{width:16px;height:16px;accent-color:var(--blue);flex:none}
+.routine-check small{margin-left:auto;color:var(--mu);font-size:10px}
+.routine-empty{font-size:11px;color:var(--mu);margin:4px}
+.routine-note{display:grid;gap:6px;font-size:12px;color:var(--mu)}
+.qm-move-modal{display:grid;gap:12px}
+.qm-move-modal>p{margin:0;color:var(--mu);font-size:12px}
+.qm-move-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.qm-move-field{display:grid;gap:5px;font-size:12px;color:var(--mu);min-width:0}
+.quickmemo-actions{display:flex;gap:5px;align-items:center;flex:none}
+.quickmemo-actions button{font-size:11px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--sf)}
+.quickmemo-check{width:17px;height:17px;accent-color:var(--green);margin-top:5px;flex:none}
+.done-note{display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid var(--line);font-size:12px}
+.done-note>span{flex:1}.done-note small{color:var(--mu)}.done-note button{border:1px solid var(--line);font-size:11px}
+.sub-person-cell{cursor:pointer;text-align:center;font-size:12px;color:var(--tx)}
+@media(max-width:760px){.dash-hero{align-items:flex-start;flex-direction:column;padding:22px 18px}.dash-grid-row{grid-template-columns:1fr;gap:0}.dash-week .week-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.week-day{padding:7px 4px;min-height:92px}.week-day-head{font-size:10px;flex-direction:column;gap:2px}.course-dash-list{grid-template-columns:1fr}.qm-move-grid,.course-create-grid{grid-template-columns:1fr}.quickmemo-item{flex-wrap:wrap}.quickmemo-actions{margin-left:36px;width:calc(100% - 36px)}}
+
 </style></head><body>
 <div class="integrated-shell">
 <aside class="aria-side" aria-label="Aria 메뉴">
-<div class="aria-brand"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6c13 0 24 13 24 29 0 11-9 21-24 21S8 46 8 35C8 19 19 6 32 6z" fill="currentColor"/><ellipse cx="24" cy="36" rx="3" ry="4.5" fill="#fff"/><ellipse cx="40" cy="36" rx="3" ry="4.5" fill="#fff"/></svg><span>Aria</span><small>WORKSPACE</small></div>
+<div class="aria-brand"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6c13 0 24 13 24 29 0 11-9 21-24 21S8 46 8 35C8 19 19 6 32 6z" fill="currentColor"/><ellipse cx="24" cy="36" rx="3" ry="4.5" fill="#fff"/><ellipse cx="40" cy="36" rx="3" ry="4.5" fill="#fff"/></svg><span>Aria</span><button id="ariaCollapseBtn" class="aria-collapse" onclick="toggleSidebar()" title="사이드바 접기" aria-label="사이드바 접기">‹</button></div>
 <div class="aria-nav-label">WORKSPACE</div>
 <button class="aria-nav active" data-kind="today" onclick="ariaGo('today')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-7h-4v7H4a1 1 0 0 1-1-1z"/></svg></span><span>대시보드</span><span class="aria-nav-badge" id="ariaWaitBadge" hidden></span></button>
 <button class="aria-nav" data-kind="table" onclick="ariaGo('table')"><span class="aria-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg></span><span>업무 관리</span></button>
@@ -618,6 +685,8 @@ let groupScrollSync=false,groupScrollFrame=0;
 document.addEventListener('scroll',e=>{const source=e.target;if(!source||!source.classList||!source.classList.contains('gb')||groupScrollSync||groupScrollFrame)return;groupScrollFrame=requestAnimationFrame(()=>{groupScrollFrame=0;groupScrollSync=true;const x=source.scrollLeft;document.querySelectorAll('.gb').forEach(el=>{if(el!==source&&Math.abs(el.scrollLeft-x)>1)el.scrollLeft=x});groupScrollSync=false})},true);
 
 /* ---------- main ---------- */
+function setSidebarCollapsed(on){let shell=document.querySelector('.integrated-shell');if(!shell)return;let collapsed=!!on&&innerWidth>760;shell.classList.toggle('sidebar-collapsed',collapsed);localStorage.setItem('affinityneo_sidebar_collapsed',collapsed?'1':'0');let b=$('ariaCollapseBtn');if(b){b.textContent=collapsed?'›':'‹';b.title=collapsed?'사이드바 펼치기':'사이드바 접기';b.setAttribute('aria-label',b.title)}document.querySelectorAll('.aria-nav[data-kind]').forEach(b=>{let label=b.querySelector('span:not(.aria-ico):not(.aria-nav-badge)');if(label)b.title=collapsed?label.textContent:''})}
+function toggleSidebar(){let shell=document.querySelector('.integrated-shell');if(shell)setSidebarCollapsed(!shell.classList.contains('sidebar-collapsed'))}
 function syncSidebar(){let v=V(),kind=v?v.kind:'today';document.querySelectorAll('.aria-nav[data-kind]').forEach(b=>b.classList.toggle('active',b.dataset.kind===kind));let badge=$('ariaWaitBadge'),n=S.tasks.filter(t=>!isD(t)&&isWaitingTask(t)&&(t.nextRemind||addD(S.waitDays||5))<=today()).length;if(badge){badge.textContent=n;badge.hidden=!n;badge.title=n+'개 업무의 답변·위임 확인 시점이 지났어요.'}}
 function render(){let priorScroll=[...document.querySelectorAll('.gb')].map(el=>el.scrollLeft),v=V(),tb=v.kind==='table';if(tb&&!v.cfg)v.cfg=newCfg();$('tb').style.display=tb?'flex':'none';if(tb){updTb();if($('search').value!==v.cfg.q)$('search').value=v.cfg.q}
 document.body.dataset.rowHeight='custom';document.body.style.setProperty('--row-height',(Number(S.uiSettings&&S.uiSettings.rowHeightPx)||48)+'px');$('content').innerHTML=({table:vTable,quickmemo:vQuickMemo,calendar:vCalendar,today:vToday,done:vDone,archive:vArchive,schedule:vSchedule,guide:vGuide})[v.kind]();document.querySelectorAll('.gb').forEach((el,i)=>{if(priorScroll[i]!=null)el.scrollLeft=priorScroll[i]});syncSidebar();updBar()}
@@ -625,7 +694,7 @@ function applyTheme(n){document.documentElement.dataset.theme=n;localStorage.set
 function exportData(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));a.download='AffinityNeo-업무백업.json';a.click();URL.revokeObjectURL(a.href)}
 function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(Array.isArray(d))d={tasks:d};if(!Array.isArray(d.tasks))throw 0;localStorage.setItem('affinityneo_v3',JSON.stringify(d));load();syncTouch();render();toast('가져왔어요.')}catch(x){toast('파일 형식이 올바르지 않아요.')}};r.readAsText(f);e.target.value=''}
 applyTheme(document.documentElement.dataset.theme||'light');
-load();render();syncInit();gcalAutoInit();
+load();setSidebarCollapsed(localStorage.getItem('affinityneo_sidebar_collapsed')==='1');render();syncInit();gcalAutoInit();
 </script><script src="gemini.js"></script><script>
 function ariaGo(kind){
  if(kind==='ai'){document.querySelectorAll('.aria-nav').forEach(b=>b.classList.remove('active'));const hit=document.querySelector('.aria-nav[data-kind="ai"]');if(hit)hit.classList.add('active');openGeminiPanel();return}
