@@ -1,0 +1,1 @@
+{"name":"aria-notify","private":true,"type":"module","dependencies":{"web-push":"^3.6.7","node-ical":">=0.18.0"}}
