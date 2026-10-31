@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f6fb">
+<title>Aria Workspace</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+:root{--blue:#2f5de8;--ink:#111b33;--sub:#6b768f;--line:#e6eaf3;--bg:#f4f6fb;--white:#fff;--soft:#e9efff;--glass:rgba(255,255,255,.72)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,-apple-system,BlinkMacSystemFont,sans-serif}
+button{font:inherit;color:inherit;border:0;cursor:pointer}.app{height:100dvh;display:grid;grid-template-columns:238px minmax(0,1fr);max-width:1600px;margin:auto}
+aside{padding:24px 14px;background:rgba(238,241,247,.82);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:6px;backdrop-filter:blur(18px)}
+.brand{display:flex;align-items:center;gap:11px;font-size:20px;font-weight:750;padding:4px 10px 25px}.mark{width:32px;height:32px;border-radius:12px;background:var(--blue);display:grid;place-items:center;color:white;font-weight:800}
+.nav{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;text-align:left;color:#59657d;background:transparent;transition:background .22s,color .22s,transform .22s}.nav:hover{background:rgba(255,255,255,.65);transform:translateX(2px)}.nav.active{background:var(--blue);color:#fff;box-shadow:0 5px 16px #2f5de822}.nav .ico{width:20px;text-align:center;font-size:17px}.spacer{flex:1}.profile{border-top:1px solid var(--line);padding:18px 8px 4px;color:var(--sub);font-size:13px}
+main{min-width:0;overflow:auto;padding:34px clamp(22px,4vw,60px) 48px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:30px}.eyebrow{font-size:12px;color:var(--sub);letter-spacing:.08em;text-transform:uppercase}.heading{font-size:30px;letter-spacing:-.04em;margin:5px 0 0}.date{color:var(--sub);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}.card{background:var(--glass);border:1px solid rgba(255,255,255,.85);box-shadow:0 8px 28px rgba(34,54,96,.045);border-radius:20px;padding:22px;backdrop-filter:blur(16px);min-width:0;animation:rise .45s both}.card h2{font-size:15px;margin:0 0 18px}.wide{grid-column:span 8}.side{grid-column:span 4}.full{grid-column:1/-1}.metric{font-size:34px;font-weight:750;letter-spacing:-.04em}.muted{color:var(--sub);font-size:13px}.bar{height:7px;border-radius:20px;background:#e8ecf5;overflow:hidden;margin-top:15px}.bar i{display:block;width:0;height:100%;background:var(--blue);border-radius:20px;transition:width .7s}.empty{border:1px dashed #d9dfeb;border-radius:14px;padding:28px;text-align:center;color:var(--sub);font-size:14px;line-height:1.7}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:800px){.app{grid-template-columns:1fr;grid-template-rows:1fr 68px}aside{grid-row:2;grid-column:1;flex-direction:row;justify-content:space-around;padding:7px 8px calc(7px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line)}.brand,.spacer,.profile{display:none}.nav{flex:1;justify-content:center;flex-direction:column;gap:3px;padding:7px 3px;font-size:10px}.nav .ico{font-size:18px}main{grid-row:1;padding:24px 16px 32px}.heading{font-size:25px}.wide,.side{grid-column:1/-1}.grid{gap:12px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand"><span class="mark">A</span> Aria Workspace</div>
+  <button class="nav active" data-view="home"><span class="ico">▦</span>대시보드</button>
+  <button class="nav" data-view="tasks"><span class="ico">☷</span>업무 관리</button>
+  <button class="nav" data-view="calendar"><span class="ico">▣</span>캘린더</button>
+  <button class="nav" data-view="today"><span class="ico">◷</span>오늘 확인</button>
+  <button class="nav" data-view="done"><span class="ico">✓</span>완료 보드</button>
+  <button class="nav" data-view="archive"><span class="ico">▤</span>보관함</button>
+  <button class="nav" data-view="assistant"><span class="ico">✧</span>AI 채팅</button>
+  <div class="spacer"></div><div class="profile">Workspace · 통합 작업 공간</div>
+</aside>
+<main>
+  <header class="top"><div><div class="eyebrow">ARIA WORKSPACE</div><h1 class="heading" id="heading">대시보드</h1></div><div class="date" id="today"></div></header>
+  <section class="grid" id="content">
+    <article class="card wide"><h2>업무 현황</h2><div class="metric">연결 준비 중</div><p class="muted">schedule2의 기존 업무 데이터를 안전하게 연결할 예정입니다.</p><div class="bar"><i></i></div></article>
+    <article class="card side"><h2>빠른 이동</h2><p class="muted">왼쪽 메뉴에서 통합 화면의 구성을 미리 확인할 수 있습니다.</p></article>
+    <article class="card full"><h2>통합 작업 공간</h2><div class="empty">이곳은 기존 Aria와 schedule2를 덮어쓰지 않고 별도로 만드는 새 앱입니다.<br>다음 단계에서 schedule2의 실제 데이터 구조와 기능을 모듈 단위로 연결합니다.</div></article>
+  </section>
+</main>
+</div>
+<script>
+const labels={home:'대시보드',tasks:'업무 관리',calendar:'캘린더',today:'오늘 확인',done:'완료 보드',archive:'보관함',assistant:'AI 채팅'};
+document.querySelector('#today').textContent=new Intl.DateTimeFormat('ko-KR',{dateStyle:'full'}).format(new Date());
+document.querySelectorAll('.nav').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x===b));document.querySelector('#heading').textContent=labels[b.dataset.view];}));
+</script>
+</body></html>
