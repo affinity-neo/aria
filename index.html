@@ -777,7 +777,7 @@ function morningRoutineText(){
  if(plan.length)plan.forEach(x=>lines.push(((r.morningDone||[]).includes(routineWorkKey(x))?'☑ ':'□ ')+routineWorkLine(x)));else lines.push('□ 오늘 계획한 업무 없음');
  lines.push('','[오늘 실제 마감 · 우선 확인]');
  if(due.length)due.forEach(x=>lines.push('□ '+routineWorkLine(x)));else lines.push('□ 오늘 실제 마감 업무 없음');
- if(after.length){lines.push('','[업무 외 시간 · 개인/수업 과제]');after.forEach(t=>lines.push('□ '+t.task+' ['+routinePriority(t)+']'))}
+ if(after.length){lines.push('','[업무 외 시간 · 개인/수업 과제]');after.forEach(t=>lines.push('□ '+t.task+' ['+routinePriority(t)+']'+(t.due?' · 실제 마감 '+t.due:'')))}
  lines.push('','[투두메이트 체크] '+(r.todoMateCopied?'☑':'□')+' 오늘 할 일을 투두메이트에 적었는지 확인');
  if(r.morningNote)lines.push('','[오늘 아침 메모]',r.morningNote);
  lines.push('','[어제 저녁 메모]',yesterdayNote||'남겨진 메모가 없어요.');
@@ -800,7 +800,7 @@ function eveningRoutineText(){
  lines.push('','[바이브 코딩 권장 한도] '+afterHoursCodingMinutes(tomorrow)+'분');
  lines.push('','[오늘 업무 · 미완료 확인]');
  if(todayPlan.length)todayPlan.forEach(x=>lines.push(((r.eveningDone||[]).includes(routineWorkKey(x))?'☑ ':'□ ')+routineWorkLine(x)));else lines.push('□ 오늘 계획한 업무 없음');
- lines.push('','[오늘 업무 외 시간 · 과제/개인 일]');if(todayAfter.length)todayAfter.forEach(t=>lines.push(((r.eveningDone||[]).includes('after:'+t.id)?'☑ ':'□ ')+t.task+' ['+routinePriority(t)+']'));else lines.push('□ 오늘 계획된 업무 외 일 없음');
+ lines.push('','[오늘 업무 외 시간 · 과제/개인 일]');if(todayAfter.length)todayAfter.forEach(t=>lines.push(((r.eveningDone||[]).includes('after:'+t.id)?'☑ ':'□ ')+t.task+' ['+routinePriority(t)+']'+(t.due?' · 실제 마감 '+t.due:'')));else lines.push('□ 오늘 계획된 업무 외 일 없음');
  lines.push('','[투두메이트 체크] '+(r.todoMateAllDone?'☑':'□')+' 오늘 할 일을 모두 완료 체크했는지 확인');
  if(r.eveningNote)lines.push('','[오늘 저녁 메모]',r.eveningNote);
  return lines.join('\n');
