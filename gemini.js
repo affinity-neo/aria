@@ -1,150 +1,129 @@
-/* AffinityNeo · AI schedule assistant (OpenRouter)
-   API keys are NEVER stored in this browser file.
-   The key lives only as OPENROUTER_API_KEY in the Cloudflare Worker Secret.
+/* Aria conversational assistant · OpenRouter
+   Low-cost model handles normal chat; Worker escalates difficult requests.
+   Schedule changes are validated and applied in this browser, then synced to Firebase.
 */
 (() => {
-  const URL_KEY = "affinityneo_gemini_proxy_url";
-  function getScheduleSnapshot() {
-    if (typeof S === "undefined" || !S || !Array.isArray(S.tasks)) throw new Error("일정 데이터를 불러오지 못했어요. 페이지를 새로고침해 주세요.");
-    const tasks = S.tasks.map(task => ({
-      id: task.id, project: task.company || "", task: task.task || "", status: task.status || "",
-      priority: task.priority || "", assignee: task.person || "", deadline: task.due || "",
-      plannedDate: task.planDate || "", completedDate: task.doneAt || "",
-      estimatedMinutes: task.estimateMin ?? "", workType: task.workType || "",
-      category: task.focusType || (task.cx && task.cx.focusType) || "", memo: task.memo || "",
-      subtasks: (task.subs || []).map(sub => ({ task: sub.task || "", status: sub.status || "", deadline: sub.due || "", memo: sub.memo || "" }))
-    }));
-    return {
-      capturedAt: new Date().toISOString(), tasks,
-      fixedEvents: Array.isArray(S.fixedEvents) ? S.fixedEvents : [],
-      checklist: S.check && Array.isArray(S.check.items) ? S.check.items.map(item => ({
-        cycle: item.cycle || "", item: item.item || "", criteria: item.crit || "", note: item.note || ""
-      })) : []
-    };
+  const URL_KEY="affinityneo_gemini_proxy_url",CHAT_KEY="affinityneo_aria_chat_v1";
+  const $id=id=>document.getElementById(id);
+  const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const norm=s=>String(s||"").toLowerCase().replace(/\s+/g,"").replace(/[·•.,!?]/g,"");
+  const readChat=()=>{try{return JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")}catch(e){return []}};
+  const saveChat=a=>localStorage.setItem(CHAT_KEY,JSON.stringify(a.slice(-60)));
+  function snapshot(){
+    if(typeof S==="undefined"||!S||!Array.isArray(S.tasks))throw new Error("일정 데이터를 불러오지 못했어요. 새로고침해 주세요.");
+    return {capturedAt:new Date().toISOString(),groups:(S.groups||[]).map(g=>typeof g==="string"?g:g.name).filter(Boolean),
+      tasks:S.tasks.map(t=>({id:t.id,group:t.company||"",task:t.task||"",status:t.status||"",priority:t.priority||"",assignee:t.person||"",deadline:t.due||"",plannedDate:t.planDate||(t.cx&&t.cx.planDate)||"",memo:t.memo||"",subtasks:(t.subs||[]).map(s=>({task:s.task||"",status:s.status||"",deadline:s.due||"")}))})};
   }
-  window.openGeminiPanel = function () {
-    const savedUrl = localStorage.getItem(URL_KEY) || "";
-    modal(`
-      <h2>Aria AI 비서</h2>
-      <p style="font-size:13px;line-height:1.6;color:var(--mu);margin:0 0 12px">업무 이동·담당자·상태·마감일 변경과 일정 조회는 앱 안에서 바로 처리해요. 복잡한 일정 분석만 AI 모델을 사용합니다.</p>
-      <label for="geminiProxyUrl" style="display:block;font-size:12px;font-weight:600;margin:10px 0 5px">Cloudflare Worker 주소</label>
-      <input id="geminiProxyUrl" class="inp" type="url" placeholder="https://내-worker.내계정.workers.dev/api/gemini" value="${savedUrl.replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">
-      <div style="font-size:11px;color:var(--mu);margin:5px 0 12px">처음 한 번만 입력하면 이 브라우저에 저장돼요.</div>
-      <label for="geminiQuestion" style="display:block;font-size:12px;font-weight:600;margin:10px 0 5px">Aria에게 요청하기</label>
-      <textarea id="geminiQuestion" class="inp" rows="4" style="resize:vertical;line-height:1.6" placeholder="예: 최아영 그림책 리터칭 업무를 유통 그룹으로 옮겨줘"></textarea>
-      <div id="geminiStatus" style="font-size:12px;color:var(--mu);margin:10px 0" aria-live="polite"></div>
-      <div id="geminiResult" style="display:none;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;background:var(--sf2);border:1px solid var(--line);border-radius:8px;padding:14px;max-height:42vh;overflow:auto;font-size:13px"></div>
-      <div class="ma"><button onclick="closeM()">닫기</button><button onclick="runAriaCommand()">요청 실행</button><button class="primary" id="geminiRunBtn" onclick="runGeminiAnalysis()">AI 분석</button></div>
-    `);
+  function setChatStyle(){
+    const md=document.querySelector(".md");
+    if(md){md.style.width="min(760px, 100%)";md.style.height="min(780px, 88vh)";md.style.display="flex";md.style.flexDirection="column";md.style.padding="0";md.style.overflow="hidden";}
+  }
+  window.openGeminiPanel=function(){
+    const savedUrl=localStorage.getItem(URL_KEY)||"";
+    modal(
+      '<div style="display:flex;flex-direction:column;height:100%;min-height:0;background:var(--sf)">'+
+        '<div style="display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)">'+
+          '<div style="width:34px;height:34px;border-radius:12px;background:#2F5DE8;color:white;display:grid;place-items:center;font-weight:800">A</div>'+
+          '<div style="flex:1"><b style="font-size:16px">Aria</b><div style="font-size:11px;color:var(--mu)">업무와 일정을 함께 정리하는 AI 비서</div></div>'+
+          '<button onclick="closeM()" aria-label="닫기">✕</button></div>'+
+        '<div id="ariaChatLog" style="flex:1;min-height:0;overflow:auto;padding:16px;background:var(--bg)"></div>'+
+        '<div style="padding:8px 14px 0;display:flex;gap:6px;flex-wrap:wrap;background:var(--sf)">'+
+          '<button class="mini" onclick="ariaChatChip(\'오늘 일정 알려줘\')">오늘 일정</button>'+
+          '<button class="mini" onclick="ariaChatChip(\'이번 주 업무 우선순위 정리해줘\')">이번 주 우선순위</button>'+
+          '<button class="mini" onclick="ariaChatChip(\'선혜 Task 안에 있는 최아영 그림책 리터칭이라는 항목은 유통 그룹으로 옮겨줘\')">업무 이동 예시</button></div>'+
+        '<form id="ariaChatForm" style="display:flex;gap:8px;align-items:flex-end;padding:12px 14px;background:var(--sf)">'+
+          '<textarea id="ariaChatInput" rows="1" placeholder="Aria에게 편하게 말해 주세요…" style="flex:1;resize:none;min-height:42px;max-height:120px;border:1px solid var(--line);border-radius:13px;padding:11px 13px;background:var(--sf2);font:inherit;outline:none"></textarea>'+
+          '<button class="primary" type="submit" style="height:42px;padding:0 17px;border-radius:12px">보내기</button></form>'+
+        '<details style="padding:0 14px 10px;background:var(--sf)"><summary style="font-size:11px;color:var(--mu);cursor:pointer">연결 설정</summary>'+
+          '<div style="display:flex;gap:6px;padding-top:8px"><input id="ariaWorkerUrl" class="inp" style="font-size:12px" placeholder="Cloudflare Worker 주소 (/api/gemini)" value="'+esc(savedUrl)+'">'+
+          '<button class="mini" type="button" onclick="saveAriaWorkerUrl()">저장</button></div>'+
+          '<div style="font-size:10px;color:var(--mu);margin-top:4px">일반 대화와 간단한 변경은 저렴한 모델, 복잡하거나 불확실한 요청만 고성능 모델로 처리해요.</div></details></div>'
+    );
+    setChatStyle();renderAriaChat();
+    const form=$id("ariaChatForm"),input=$id("ariaChatInput");
+    form.addEventListener("submit",e=>{e.preventDefault();sendAriaMessage()});
+    input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAriaMessage()}});
+    input.focus();
   };
-
-  function localToday(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-  function addLocalDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-  function taskNameFrom(q){
-    const quoted=q.match(/["'“”‘’「」『』]([^"'“”‘’「」『』]+)["'“”‘’「」『』]/);if(quoted)return quoted[1].trim();
-    let m=q.match(/(?:안에\s*있는\s*)(.+?)(?:이라는\s*항목|라는\s*항목|\s*항목)/);if(m)return m[1].trim();
-    m=q.match(/(.+?)(?:\s*항목을|\s*항목은|\s*업무를|\s*업무는)/);if(m)return m[1].trim();
-    m=q.match(/(.+?)\s*(?:을|를)\s*(?:완료|삭제|마감일|담당자|상태)/);if(m)return m[1].trim();
-    return "";
-  }
-  function resolveTask(name){
-    if(!name)return {items:[]};
-    const key=name.replace(/\s+/g,"").toLowerCase();
-    return {items:S.tasks.filter(t=>String(t.task||"").replace(/\s+/g,"").toLowerCase().includes(key))};
-  }
-  function commandResult(message,ok=true){
-    const status=document.getElementById("geminiStatus"),output=document.getElementById("geminiResult");
-    if(status)status.textContent=message;
-    if(output){output.style.display="block";output.textContent=message;output.style.whiteSpace="pre-wrap"}
-    return ok;
-  }
-  window.runAriaCommand=function(){
-    const input=document.getElementById("geminiQuestion");if(!input)return;
-    const q=input.value.trim();if(!q){commandResult("요청 내용을 입력해 주세요.",false);input.focus();return}
-    if(!Array.isArray(S?.tasks)){commandResult("업무 데이터를 불러오지 못했어요.",false);return}
-    const taskName=taskNameFrom(q),matches=resolveTask(taskName).items;
-    const groupMatches=[...q.matchAll(/([가-힣A-Za-z0-9_-]+)\s*그룹(?:으로|에)/g)];
-    const targetGroup=groupMatches.length?groupMatches[groupMatches.length-1][1]:"";
-    if(/그룹(?:으로|에)\s*(?:옮겨|이동)/.test(q)||/(?:옮겨|이동)\s*(?:줘|해)/.test(q)&&targetGroup){
-      if(!taskName)return commandResult("옮길 업무 이름을 정확히 적어 주세요. 예: ‘업무명’ 항목을 유통 그룹으로 옮겨줘.",false);
-      if(matches.length!==1)return commandResult(matches.length?("같은 이름의 업무가 여러 개 있어요. 정확한 이름을 지정해 주세요.\n"+matches.map(t=>"· "+t.company+" / "+t.task).join("\n")):"해당 업무를 찾지 못했어요: "+taskName,false);
-      const t=matches[0];if(!S.groups.some(x=>x.name===targetGroup))S.groups.push({name:targetGroup,color:"#808080"});
-      const before=t.company;t.company=targetGroup;save();syncTouch();render();
-      return commandResult("업무를 이동했어요.\n"+t.task+"\n"+before+" → "+targetGroup);
-    }
-    if(/완료(?:로| 처리|해 줘|해줘|시켜)/.test(q)){
-      if(matches.length!==1)return commandResult(matches.length?"같은 이름의 업무가 여러 개 있어요.":"완료 처리할 업무를 찾지 못했어요: "+(taskName||"업무명 없음"),false);
-      const t=matches[0],done=(S.labels.status||[]).find(x=>x.n==="완료");if(done)t.status=done.n;t.doneAt=localToday();save();syncTouch();render();return commandResult("완료 처리했어요.\n"+t.task);
-    }
-    if(/삭제(?:해|해줘|해 줘)/.test(q)){
-      if(matches.length!==1)return commandResult(matches.length?"같은 이름의 업무가 여러 개 있어요.":"삭제할 업무를 찾지 못했어요.",false);
-      const t=matches[0];S.tasks=S.tasks.filter(x=>x.id!==t.id);save();syncTouch();render();return commandResult("업무를 삭제했어요.\n"+t.task);
-    }
-    const assignee=q.match(/담당자(?:를|는)?\s*([가-힣A-Za-z0-9_-]+)\s*(?:로|으로)?\s*(?:변경|바꿔|지정)/)||q.match(/([가-힣A-Za-z0-9_-]+)에게\s*맡겨/);
-    if(assignee){
-      if(matches.length!==1)return commandResult(matches.length?"같은 이름의 업무가 여러 개 있어요.":"담당자를 바꿀 업무를 찾지 못했어요.",false);
-      const t=matches[0],person=assignee[1];t.person=person;if(!(S.labels.person||[]).some(x=>x.n===person))S.labels.person.push({n:person,c:"#808080"});save();syncTouch();render();return commandResult("담당자를 변경했어요.\n"+t.task+"\n담당자: "+person);
-    }
-    const statusMatch=q.match(/상태(?:를|는)?\s*(진행 전|자료 대기 중|진행 중|1차|2차|수정 중|완료)\s*(?:으로|로)?\s*(?:변경|바꿔|설정)/);
-    if(statusMatch){
-      if(matches.length!==1)return commandResult(matches.length?"같은 이름의 업무가 여러 개 있어요.":"상태를 변경할 업무를 찾지 못했어요.",false);
-      const t=matches[0],next=statusMatch[1];if(!(S.labels.status||[]).some(x=>x.n===next))return commandResult("현재 보드에 ‘"+next+"’ 상태가 없어요.",false);
-      t.status=next;if(next==="완료")t.doneAt=localToday();else t.doneAt="";save();syncTouch();render();return commandResult("상태를 변경했어요.\n"+t.task+"\n상태: "+next);
-    }
-    const date=q.match(/(20\d{2}-\d{2}-\d{2})/)?.[1]||(/모레/.test(q)?addLocalDays(2):/내일/.test(q)?addLocalDays(1):/오늘/.test(q)?localToday():"");
-    if(date&&/(마감|기한|날짜)/.test(q)){
-      if(matches.length!==1)return commandResult(matches.length?"같은 이름의 업무가 여러 개 있어요.":"날짜를 변경할 업무를 찾지 못했어요.",false);
-      matches[0].due=date;save();syncTouch();render();return commandResult("마감일을 변경했어요.\n"+matches[0].task+"\n마감일: "+date);
-    }
-    if(/오늘\s*(?:일정|업무|할 일)|오늘 뭐/.test(q)){
-      const d=localToday(),list=S.tasks.filter(t=>!t.doneAt&&(t.due===d||(t.cx&&t.cx.planDate===d)));
-      return commandResult(list.length?"오늘 확인할 업무 "+list.length+"개\n"+list.map(t=>"· "+t.task+" ("+t.company+" · "+(t.due===d?"마감":"예정")+")").join("\n"):"오늘 예정되거나 마감인 미완료 업무가 없어요.");
-    }
-    if(/찾아|검색|목록|보여줘|보여\s*줘/.test(q)&&matches.length){
-      return commandResult("찾은 업무 "+matches.length+"개\n"+matches.map(t=>"· "+t.company+" / "+t.task+" / "+t.status+" / "+(t.due||"마감일 없음")).join("\n"));
-    }
-    if(taskName&&!matches.length)return commandResult("해당 업무를 찾지 못했어요: "+taskName,false);
-    return commandResult("이 요청은 바로 실행할 수 있는 명령으로 해석하지 못했어요. 업무 이동·담당자 변경·마감일 변경·완료 처리·삭제·오늘 일정 조회는 ‘요청 실행’을, 우선순위와 주간 계획 분석은 ‘AI 분석’을 눌러 주세요.",false);
+  window.saveAriaWorkerUrl=function(){
+    const v=($id("ariaWorkerUrl").value||"").trim().replace(/\/+$/,"");
+    if(!/^https:\/\/[a-z0-9.-]+\.workers\.dev\/api\/gemini$/i.test(v)){if(typeof toast==="function")toast("Worker 주소 형식을 확인해 주세요.");return;}
+    localStorage.setItem(URL_KEY,v);if(typeof toast==="function")toast("연결 주소를 저장했어요.");
   };
-
-  window.runGeminiAnalysis = async function () {
-    const button = document.getElementById("geminiRunBtn"), status = document.getElementById("geminiStatus");
-    const output = document.getElementById("geminiResult"), urlInput = document.getElementById("geminiProxyUrl");
-    const questionInput = document.getElementById("geminiQuestion");
-    if (!button || !status || !output || !urlInput || !questionInput) return;
-    const endpoint = urlInput.value.trim().replace(/\/+$/, "");
-    if (!/^https:\/\/[a-z0-9.-]+\.workers\.dev\/api\/gemini$/i.test(endpoint)) {
-      status.textContent = "Cloudflare Worker 주소를 https://…workers.dev/api/gemini 형식으로 입력해 주세요.";
-      urlInput.focus(); return;
+  window.ariaChatChip=function(text){const i=$id("ariaChatInput");if(i){i.value=text;sendAriaMessage()}};
+  function renderAriaChat(){
+    const log=$id("ariaChatLog");if(!log)return;
+    const history=readChat();
+    let html='<div style="display:flex;gap:8px;margin-bottom:14px;align-items:flex-end"><div style="width:28px;height:28px;border-radius:50%;background:#2F5DE8;color:white;display:grid;place-items:center;flex:none;font-weight:700">A</div><div style="max-width:86%;background:var(--sf);border:1px solid var(--line);border-radius:16px 16px 16px 5px;padding:11px 14px;line-height:1.6;font-size:13px">안녕하세요! 저는 Aria예요. 업무 이동이나 일정 변경도 평소처럼 말해 주세요. 실제 보드에 반영한 뒤 결과를 알려드릴게요.</div></div>';
+    history.forEach(m=>{
+      const mine=m.role==="user";
+      html+='<div style="display:flex;justify-content:'+(mine?"flex-end":"flex-start")+';gap:8px;margin:10px 0;align-items:flex-end">'+
+        (mine?"":'<div style="width:28px;height:28px;border-radius:50%;background:#2F5DE8;color:white;display:grid;place-items:center;flex:none;font-weight:700">A</div>')+
+        '<div style="max-width:86%;white-space:pre-wrap;overflow-wrap:anywhere;background:'+(mine?"#2F5DE8":"var(--sf)")+';color:'+(mine?"#fff":"var(--tx)")+';border:'+(mine?"0":"1px solid var(--line)")+';border-radius:'+(mine?"16px 16px 5px 16px":"16px 16px 16px 5px")+';padding:11px 14px;line-height:1.65;font-size:13px">'+esc(m.content)+'</div></div>';
+    });
+    log.innerHTML=html;log.scrollTop=log.scrollHeight;
+  }
+  function pushChat(role,content){const a=readChat();a.push({role,content:String(content||"")});saveChat(a);renderAriaChat();}
+  function findTask(action){
+    const tasks=S.tasks||[],key=norm(action.taskName||action.task||"");
+    if(!key)return {matches:[]};
+    let matches=tasks.filter(t=>norm(t.task)===key);
+    if(!matches.length)matches=tasks.filter(t=>norm(t.task).includes(key)||key.includes(norm(t.task)));
+    const from=norm(action.fromGroup||action.sourceGroup||"");
+    if(from)matches=matches.filter(t=>norm(t.company)===from);
+    return {matches};
+  }
+  function applyAriaAction(action){
+    if(!action||typeof action!=="object")return null;
+    const type=action.type||action.action;
+    if(type==="move_task"){
+      const found=findTask(action),to=String(action.toGroup||action.targetGroup||"").trim();
+      if(found.matches.length!==1)return found.matches.length?"같은 이름의 업무가 여러 개 있어요. 원래 그룹을 포함해 다시 지정해 주세요.":"말씀하신 업무를 현재 보드에서 찾지 못했어요. 업무명과 원래 그룹을 다시 확인해 주세요.";
+      if(!to)return "이동할 그룹을 확인하지 못했어요. 어느 그룹으로 옮길지 알려주세요.";
+      const task=found.matches[0],group=(S.groups||[]).find(g=>norm(typeof g==="string"?g:g.name)===norm(to));
+      if(!group)return "‘"+to+"’ 그룹이 현재 보드에 없어요. 그룹 이름을 확인해 주세요.";
+      const before=task.company||"";
+      if(norm(before)===norm(to))return "‘"+task.task+"’ 업무는 이미 ‘"+to+"’ 그룹에 있어요.";
+      task.company=typeof group==="string"?group:group.name;
+      save();if(typeof syncTouch==="function")syncTouch();if(typeof render==="function")render();
+      return "옮겼어요! ‘"+task.task+"’ 업무를 ‘"+before+"’에서 ‘"+task.company+"’ 그룹으로 이동했어요.";
     }
-    localStorage.setItem(URL_KEY, endpoint);
-    button.disabled = true; button.textContent = "분석 중…";
-    status.textContent = "일정 데이터를 정리해 Gemma에 전달하고 있어요.";
-    output.style.display = "none"; output.textContent = "";
-    try {
-      const schedule = getScheduleSnapshot();
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 65000);
-      let response;
-      try {
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ schedule, question: questionInput.value.trim() }),
-          signal: controller.signal
-        });
-      } finally {
-        clearTimeout(timer);
-      }
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || "AI 분석 요청에 실패했어요. Cloudflare 설정을 확인해 주세요.");
-      if (!data.text) throw new Error("분석 결과가 비어 있어요.");
-      output.textContent = data.text; output.style.display = "block";
-      status.textContent = "분석이 완료됐어요. 모델: Gemma 4 26B A4B (무료) · 기준 시각: " + new Date(schedule.capturedAt).toLocaleString("ko-KR");
-    } catch (error) {
-      status.textContent = error.name === "AbortError" ? "AI 응답 시간이 초과됐어요. 잠시 후 다시 시도해 주세요." : (error.message || "오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
-    } finally {
-      button.disabled = false; button.textContent = "다시 분석하기";
+    if(type==="set_status"||type==="set_due"||type==="set_assignee"||type==="complete_task"){
+      const found=findTask(action);
+      if(found.matches.length!==1)return found.matches.length?"같은 이름의 업무가 여러 개 있어요. 원래 그룹을 함께 알려주세요.":"해당 업무를 찾지 못했어요.";
+      const t=found.matches[0];
+      if(type==="set_status"){
+        const v=String(action.status||"").trim();if(!(S.labels.status||[]).some(x=>x.n===v))return "‘"+v+"’ 상태가 보드에 없어요.";t.status=v;if(v==="완료")t.doneAt=new Date().toISOString().slice(0,10);else t.doneAt="";
+      }else if(type==="set_due"){
+        const v=String(action.deadline||action.due||"");if(!/^20\d{2}-\d{2}-\d{2}$/.test(v))return "마감일 형식을 확인하지 못했어요.";t.due=v;
+      }else if(type==="set_assignee"){t.person=String(action.assignee||"").trim();}
+      else{const done=(S.labels.status||[]).find(x=>x.n==="완료");if(!done)return "완료 상태를 찾지 못했어요.";t.status=done.n;t.doneAt=new Date().toISOString().slice(0,10);}
+      save();if(typeof syncTouch==="function")syncTouch();if(typeof render==="function")render();
+      return "반영했어요! ‘"+t.task+"’ 업무를 업데이트했어요.";
+    }
+    return null;
+  }
+  window.sendAriaMessage=async function(){
+    const input=$id("ariaChatInput");if(!input)return;
+    const question=input.value.trim();if(!question)return;
+    input.value="";pushChat("user",question);
+    const url=localStorage.getItem(URL_KEY)||"";
+    if(!/^https:\/\/[a-z0-9.-]+\.workers\.dev\/api\/gemini$/i.test(url)){pushChat("assistant","먼저 연결 설정에서 Cloudflare Worker 주소를 저장해 주세요.");return;}
+    const log=$id("ariaChatLog"),pending=document.createElement("div");
+    pending.id="ariaPending";pending.style.cssText="font-size:12px;color:var(--mu);padding:8px 4px";pending.textContent="Aria가 생각하고 있어요…";log.appendChild(pending);log.scrollTop=log.scrollHeight;
+    try{
+      const schedule=snapshot(),history=readChat().slice(-12).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.content}));
+      const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:"chat",schedule,question,messages:history})});
+      const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"AI 요청에 실패했어요.");
+      let reply=String(data.reply||data.text||"");
+      if(data.action){const result=applyAriaAction(data.action);if(result)reply=result;}
+      if(!reply)reply="요청을 처리했어요.";
+      if(data.escalated)reply+="\n\n복잡한 요청이라 고성능 모델로 한 번 더 확인했어요.";
+      if(pending.parentNode)pending.remove();pushChat("assistant",reply);
+    }catch(error){
+      if(pending.parentNode)pending.remove();pushChat("assistant","요청을 처리하지 못했어요. "+(error.message||"잠시 후 다시 시도해 주세요."));
     }
   };
+  window.runAriaCommand=window.sendAriaMessage;
+  window.runGeminiAnalysis=window.sendAriaMessage;
 })();
