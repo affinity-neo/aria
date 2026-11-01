@@ -1162,12 +1162,12 @@ function ariaMobileSetActive(kind){document.querySelectorAll('#ariaMobileNav but
 function ariaSettingsPanelRefresh(){const e=document.getElementById('ariaMobileThemeLabel');if(e)e.textContent=document.documentElement.dataset.theme==='dark'?'현재 다크 모드':'현재 라이트 모드';}
 function ariaMobileGo(kind){
  const ws=document.querySelector('.aria-workspace'),settings=document.getElementById('ariaSettingsPanel');
- if(kind==='settings'){closeM();ws.classList.add('mobile-settings-mode');settings.classList.add('open');ariaMobileSetActive('settings');ariaSettingsPanelRefresh();return;}
+ if(kind==='settings'){ariaGo('settings');ariaMobileSetActive('settings');return;}
  ws.classList.remove('settings-mode','mobile-settings-mode');settings.classList.remove('open');ariaMobileSetActive(kind);
  if(kind==='ai'){ariaNewChat();openGeminiPanel();return;}
  closeM(); ariaGo(kind);
 }
-function ariaMobileSettingGo(kind){const ws=document.querySelector('.aria-workspace');ws.classList.remove('mobile-settings-mode');document.getElementById('ariaSettingsPanel').classList.remove('open');ariaMobileSetActive(kind==='schedule'?'settings':'settings');ariaGo(kind);}
+function ariaMobileSettingGo(kind){const ws=document.querySelector('.aria-workspace');ws.classList.remove('settings-mode','mobile-settings-mode');document.getElementById('ariaSettingsPanel').classList.remove('open');ariaMobileSetActive(kind==='schedule'?'settings':'settings');ariaGo(kind);}
 function ariaGo(kind){
  if(kind==='settings'){closeM();const ws=document.querySelector('.aria-workspace'),p=document.getElementById('ariaSettingsPanel');ws.classList.add('settings-mode');p.classList.add('open');ariaSettingsPanelRefresh();document.querySelectorAll('.aria-nav').forEach(b=>b.classList.remove('active'));return;}
  if(kind!=='ai')closeM();
