@@ -68,7 +68,7 @@ function openRouterUserMessage(error){
 }
 /* Google Calendar: read-only OAuth, encrypted refresh tokens, user-selected calendars */
 
-const GOOGLE_SCOPE="https://www.googleapis.com/auth/calendar.readonly";
+const GOOGLE_SCOPE="https://www.googleapis.com/auth/calendar.events";
 
 const GOOGLE_APP_URL="https://affinity-neo.github.io/aria/";
 
@@ -246,7 +246,7 @@ async function gcalEvents(request,env,origin){
 
     if(!r.ok)throw new Error(d.error&&d.error.message||"Google Calendar 일정을 가져오지 못했어요.");
 
-    events.push(...(d.items||[]).filter(e=>e.status!=="cancelled").map(e=>({id:e.id,calendarId,summary:e.summary||"(제목 없음)",start:e.start||{},end:e.end||{},transparency:e.transparency||"opaque",status:e.status||"confirmed"})));
+    events.push(...(d.items||[]).filter(e=>e.status!=="cancelled").map(e=>({id:e.id,calendarId,summary:e.summary||"(제목 없음)",description:e.description||"",start:e.start||{},end:e.end||{},transparency:e.transparency||"opaque",status:e.status||"confirmed",extendedProperties:e.extendedProperties||{},htmlLink:e.htmlLink||""})));
 
     pageToken=d.nextPageToken||"";if(!pageToken)break;
 
@@ -260,6 +260,38 @@ async function gcalEvents(request,env,origin){
 
 }
 
+async function gcalCreateEvent(request,env,origin){
+ if(!gcalReady(env))return json({error:"Google Calendar 설정이 아직 준비되지 않았어요."},503,origin);
+ const key=request.headers.get("X-Aria-Calendar-Key")||"";if(!gcalKeyValid(key))return json({error:"연결 키가 없거나 올바르지 않아요."},401,origin);
+ const input=await request.json().catch(()=>({})),calendarId=String(input.calendarId||""),summary=String(input.summary||"").trim().slice(0,180),start=input.start,end=input.end;
+ if(!calendarId||!summary||!start||!end||!start.dateTime||!end.dateTime||!Number.isFinite(Date.parse(start.dateTime))||!Number.isFinite(Date.parse(end.dateTime))||Date.parse(end.dateTime)<=Date.parse(start.dateTime))return json({error:"일정 이름과 시작·종료 시간을 확인해 주세요."},400,origin);
+ try{
+  const auth=await gcalAccessToken(key,env);if(auth.error)return json({error:auth.error},404,origin);
+  if(!(auth.saved.calendarIds||[]).includes(calendarId))return json({error:"선택한 Google Calendar가 아니에요. 캘린더 선택을 다시 확인해 주세요."},403,origin);
+  const body={summary,description:String(input.description||"").slice(0,3000),start,end};
+  if(input.taskKey)body.extendedProperties={private:{ariaSource:"Aria Workspace",ariaTaskKey:String(input.taskKey).slice(0,100)}};
+  const api="https://www.googleapis.com/calendar/v3/calendars/"+encodeURIComponent(calendarId)+"/events";
+  const response=await fetch(api,{method:"POST",headers:{Authorization:"Bearer "+auth.accessToken,"Content-Type":"application/json"},body:JSON.stringify(body)}),event=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(event.error&&event.error.message||"Google Calendar에 일정을 저장하지 못했어요.");
+  return json({event:{id:event.id,calendarId,summary:event.summary||summary,description:event.description||"",start:event.start||start,end:event.end||end,transparency:event.transparency||"opaque",status:event.status||"confirmed",extendedProperties:event.extendedProperties||{},htmlLink:event.htmlLink||""}},200,origin);
+ }catch(e){return json({error:String(e.message||"Google Calendar 일정을 만들지 못했어요.")},502,origin);}
+}
+
+async function gcalUpdateEvent(request,env,origin){
+ if(!gcalReady(env))return json({error:"Google Calendar 설정이 아직 준비되지 않았어요."},503,origin);
+ const key=request.headers.get("X-Aria-Calendar-Key")||"";if(!gcalKeyValid(key))return json({error:"연결 키가 없거나 올바르지 않아요."},401,origin);
+ const input=await request.json().catch(()=>({})),calendarId=String(input.calendarId||""),eventId=String(input.eventId||""),start=input.start,end=input.end;
+ if(!calendarId||!eventId||!start||!end||!start.dateTime||!end.dateTime||!Number.isFinite(Date.parse(start.dateTime))||!Number.isFinite(Date.parse(end.dateTime))||Date.parse(end.dateTime)<=Date.parse(start.dateTime))return json({error:"변경할 일정의 시작·종료 시간을 확인해 주세요."},400,origin);
+ try{
+  const auth=await gcalAccessToken(key,env);if(auth.error)return json({error:auth.error},404,origin);
+  if(!(auth.saved.calendarIds||[]).includes(calendarId))return json({error:"선택한 Google Calendar가 아니에요."},403,origin);
+  const body={start,end};if(input.summary)body.summary=String(input.summary).trim().slice(0,180);
+  const api="https://www.googleapis.com/calendar/v3/calendars/"+encodeURIComponent(calendarId)+"/events/"+encodeURIComponent(eventId);
+  const response=await fetch(api,{method:"PATCH",headers:{Authorization:"Bearer "+auth.accessToken,"Content-Type":"application/json"},body:JSON.stringify(body)}),event=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(event.error&&event.error.message||"Google Calendar 일정을 수정하지 못했어요.");
+  return json({event:{id:event.id,calendarId,summary:event.summary||input.summary||"",description:event.description||"",start:event.start||start,end:event.end||end,transparency:event.transparency||"opaque",status:event.status||"confirmed",extendedProperties:event.extendedProperties||{},htmlLink:event.htmlLink||""}},200,origin);
+ }catch(e){return json({error:String(e.message||"Google Calendar 일정을 수정하지 못했어요.")},502,origin);}
+}
 async function gcalDisconnect(request,env,origin){
 
  const input=await request.json().catch(()=>({})),key=String(input.clientKey||"");if(!gcalKeyValid(key))return json({error:"연결 키가 올바르지 않아요."},400,origin);
@@ -293,6 +325,8 @@ export default {
     if(url.pathname==="/api/google/calendars/save"&&request.method==="POST")return gcalSaveCalendars(request,env,origin);
 
     if(url.pathname==="/api/google/events"&&request.method==="GET")return gcalEvents(request,env,origin);
+    if(url.pathname==="/api/google/events/create"&&request.method==="POST")return gcalCreateEvent(request,env,origin);
+    if(url.pathname==="/api/google/events/update"&&request.method==="POST")return gcalUpdateEvent(request,env,origin);
 
     if(url.pathname==="/api/google/disconnect"&&request.method==="POST")return gcalDisconnect(request,env,origin);
 
