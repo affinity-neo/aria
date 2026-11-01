@@ -507,27 +507,25 @@ td{height:34px!important}
 .aria-mobile-ai svg{width:43px!important;height:43px!important}.aria-mobile-ai.active{outline:2px solid var(--blue)!important;outline-offset:2px!important}
 }
 @media(min-width:761px){.aria-mobile-nav,.aria-mobile-ai{display:none!important}}\n.board-breadcrumb{display:flex;align-items:center;gap:9px}.board-breadcrumb>span{font-size:13px;font-weight:500;color:var(--mu)}.board-breadcrumb>i{font-style:normal;color:var(--mu);font-size:13px}.board-breadcrumb h2{margin:0;font-size:20px}
-.capacity-card.capacity-compact{display:flex;align-items:center;gap:0;max-width:580px;margin:10px 0 14px;padding:11px 15px;background:var(--sf2);border:1px solid var(--line);border-radius:12px;box-shadow:none}
-.capacity-card.capacity-compact .capacity-copy,.capacity-card.capacity-compact .capacity-meter{display:flex;flex:1;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
-.capacity-card.capacity-compact .capacity-copy b,.capacity-card.capacity-compact .capacity-meter strong{font-size:17px;line-height:1.25}
-.capacity-card.capacity-compact .capacity-copy span,.capacity-card.capacity-compact .capacity-meter span{font-size:11px;color:var(--mu);font-weight:500}
-.capacity-card.capacity-compact .capacity-meter{padding-left:0}.capacity-card.capacity-compact .capacity-slash{font-style:normal;color:var(--mu);font-size:15px;padding:0 16px}
+.capacity-card.capacity-dashboard{display:grid;grid-template-columns:minmax(230px,1fr) minmax(260px,1.45fr) minmax(145px,.7fr);align-items:center;gap:24px;margin:12px 0 14px;padding:25px 28px;border-radius:15px;background:linear-gradient(115deg,var(--inp),var(--sf2));border:1px solid var(--line);box-shadow:none}
+.capacity-dashboard .capacity-copy b{font-size:30px;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}.capacity-dashboard .capacity-copy b small{font-size:19px;color:var(--mu);font-weight:500}.capacity-dashboard .capacity-copy>span{font-size:13px;color:var(--mu);font-weight:650;margin-top:7px}
+.capacity-dashboard .capacity-track{height:13px;border-radius:20px;background:var(--line);overflow:hidden}.capacity-dashboard .capacity-track i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#579bfc,#3478f6);transition:width .25s ease}.capacity-dashboard .capacity-labels{font-size:11px;margin-top:10px}.capacity-dashboard .capacity-labels b{font-weight:750;color:var(--mu)}.capacity-dashboard .capacity-remaining{display:flex;flex-direction:column;align-items:flex-end;gap:5px}.capacity-dashboard .capacity-remaining strong{font-size:29px;line-height:1.2;color:var(--green);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}.capacity-dashboard .capacity-remaining span{font-size:12px;color:var(--mu)}.capacity-dashboard.capacity-over .capacity-track i{background:#e2445c}.capacity-dashboard.capacity-over .capacity-remaining strong{color:#e2445c}
+@media(max-width:900px){.capacity-card.capacity-dashboard{grid-template-columns:1fr auto;gap:14px;padding:18px}.capacity-dashboard .capacity-meter{grid-column:1/-1;grid-row:2}.capacity-dashboard .capacity-remaining{grid-column:2;grid-row:1}}
 
 \n</style></head><body>
 <div class="integrated-shell">
 <aside class="aria-side" aria-label="Aria 메뉴">
 <div class="aria-brand"><svg viewBox="0 0 162 158" aria-hidden="true"><defs><linearGradient id="ariaBrandBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4383f7"/><stop offset="100%" stop-color="#1e55d8"/></linearGradient></defs><path d="M20 85 C22 67 37 40 50 25 C59 14 70 17 82 17 C99 17 112 27 122 45 C134 66 143 83 144 98 C146 114 135 127 118 134 C92 144 61 141 40 130 C23 121 15 104 20 85Z" fill="url(#ariaBrandBlue)"/><ellipse cx="66.5" cy="85.5" rx="6.1" ry="10" fill="#fff"/><ellipse cx="97" cy="85.5" rx="6.1" ry="10" fill="#fff"/></svg><span>Aria</span></div>
 
+<button class="aria-nav" data-kind="ai" onclick="ariaGo('ai')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M12 2.8v3.1M12 18.1v3.1M2.8 12h3.1M18.1 12h3.1M5.5 5.5l2.2 2.2m8.6 8.6 2.2 2.2m0-13-2.2 2.2m-8.6 8.6-2.2 2.2"/><circle cx="12" cy="12" r="4.2"/></svg></span><span>AI 비서</span></button>
 <button class="aria-nav active" data-kind="today" onclick="ariaGo('today')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-7h-4v7H4a1 1 0 0 1-1-1z"/></svg></span><span>대시보드</span><span class="aria-nav-badge" id="ariaWaitBadge" hidden></span></button>
 <button class="aria-nav" data-kind="table" onclick="ariaGo('table')"><span class="aria-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg></span><span>업무 관리</span></button>
-<button class="aria-nav" data-kind="quickmemo" onclick="ariaGo('quickmemo')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span>빠른 메모</span></button>
 <button class="aria-nav" data-kind="afterhours" onclick="ariaGo('afterhours')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M20.4 15.3A8.6 8.6 0 0 1 8.7 3.6 8.8 8.8 0 1 0 20.4 15.3Z"/></svg></span><span>개인 일정</span></button>
 <button class="aria-nav" data-kind="calendar" onclick="ariaGo('calendar')"><span class="aria-ico"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h7"/></svg></span><span>캘린더</span></button>
-
 <div class="aria-nav-separator" aria-hidden="true"></div>
-<button class="aria-nav" data-kind="ai" onclick="ariaGo('ai')"><span class="aria-ico"><svg viewBox="0 0 162 158" style="width:22px;height:22px;display:block"><defs><linearGradient id="ariaNavMascotBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4383f7"/><stop offset="100%" stop-color="#1e55d8"/></linearGradient></defs><path d="M20 85 C22 67 37 40 50 25 C59 14 70 17 82 17 C99 17 112 27 122 45 C134 66 143 83 144 98 C146 114 135 127 118 134 C92 144 61 141 40 130 C23 121 15 104 20 85Z" fill="url(#ariaNavMascotBlue)"/><ellipse cx="66.5" cy="85.5" rx="6.1" ry="10" fill="#fff"/><ellipse cx="97" cy="85.5" rx="6.1" ry="10" fill="#fff"/></svg></span><span>AI 비서</span></button>
+<button class="aria-nav" data-kind="quickmemo" onclick="ariaGo('quickmemo')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span>빠른 메모</span></button>
 <button class="aria-nav" data-kind="archive" onclick="ariaGo('archive')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M3 5h18v4H3zM5 9v11h14V9M9 13h6"/></svg></span><span>보관 업무</span></button>
-<div class="aria-side-bottom"><button class="aria-nav" data-kind="settings" onclick="ariaGo('settings')"><span class="aria-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.5.9l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.5-.9l-1.7.6-1.4-2.4 1.4-1.1a7 7 0 0 1 0-1.8l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.5.9l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.5.9l1.7-.6 1.4 2.4a7 7 0 0 1 0 1.8Z"/></svg></span><span>설정</span></button><button id="ariaCollapseBtn" class="aria-collapse" onclick="toggleSidebar()" title="사이드바 접기" aria-label="사이드바 접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button></div>
+<div class="aria-side-bottom"><button class="aria-nav" data-kind="settings" onclick="ariaGo('settings')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M12 8.3a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4Z"/><path d="M19.4 13.5a7.8 7.8 0 0 0 0-3l1.5-1.1-1.5-2.6-1.8.7a7.7 7.7 0 0 0-2.6-1.5L14.7 4h-3.1l-.3 2a7.7 7.7 0 0 0-2.6 1.5l-1.8-.7-1.5 2.6 1.5 1.1a7.8 7.8 0 0 0 0 3l-1.5 1.1 1.5 2.6 1.8-.7a7.7 7.7 0 0 0 2.6 1.5l.3 2h3.1l.3-2a7.7 7.7 0 0 0 2.6-1.5l1.8.7 1.5-2.6-1.5-1.1Z"/></svg></span><span>설정</span></button><button id="ariaCollapseBtn" class="aria-collapse" onclick="toggleSidebar()" title="사이드바 접기" aria-label="사이드바 접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button></div>
 </aside>
 <div class="aria-workspace">
 <header aria-hidden="true"></header>
@@ -767,7 +765,11 @@ GL={};GV=[];
 let todayPlan=active.filter(t=>!isPinnedTask(t)&&(t.cx||{}).planDate===today()),minutes=todayPlan.reduce((n,t)=>n+Math.max(0,Number((t.cx||{}).estimateMin)||0),0),unestimatedToday=active.filter(t=>!isPinnedTask(t)&&!Number((t.cx||{}).estimateMin)&&(((t.cx||{}).planDate===today())||t.due===today())),now=new Date(),dayCalendarMinutes=fixedMinutesFor(today(),9*60),availableMinutes=Math.max(0,DAY_CAPACITY-dayCalendarMinutes),overdue=active.filter(t=>!isPinnedTask(t)&&t.due&&diff(t.due)<0);
 let top=afterHours?`<div class="table-command"><div class="table-command-head"><h2>개인 일정</h2></div></div>`:`<div class="table-command">
 <div class="table-command-head"><div class="board-breadcrumb"><span>업무 관리 보드</span><i>/</i><h2>전체 업무 관리</h2></div></div>
-<div class="capacity-card capacity-compact"><div class="capacity-copy"><b>${formatHM(minutes)}</b><span>오늘 배치한 업무</span></div><i class="capacity-slash">/</i><div class="capacity-meter capacity-available"><strong>${formatHM(availableMinutes)}</strong><span>오늘 가용시간</span></div></div>
+<div class="capacity-card capacity-dashboard ${minutes>availableMinutes?'capacity-over':''}">
+<div class="capacity-copy"><b>${formatHM(minutes)} <small>/ ${formatHM(availableMinutes)}</small></b><span>오늘 배치한 업무</span></div>
+<div class="capacity-meter"><div class="capacity-track"><i style="width:${availableMinutes?Math.min(100,Math.round(minutes/availableMinutes*100)):0}%"></i></div><div class="capacity-labels"><span>09:00 시작</span><b>${availableMinutes?Math.round(minutes/availableMinutes*100):0}% 배치</b><span>18:00 종료</span></div></div>
+<div class="capacity-remaining"><strong>${minutes>availableMinutes?'-':''}${formatHM(Math.abs(availableMinutes-minutes))}</strong><span>${minutes>availableMinutes?'배치 초과':'남은 시간'}</span></div>
+</div>
 <div class="table-quickstats"><button type="button" class="quickstat-action" onclick="openUnestimatedList()"><b>${unestimatedToday.length}</b><span>예상 시간 미입력</span></button><div><b>${overdue.length}</b><span>마감 지연</span></div></div>
 </div>`;
 let main=groupList.map((g,i)=>grpHtml(g,i,cols,c.group)).join('')+(c.group==='company'?'<button class="lk" onclick="addGroup()">＋ 새 그룹 추가</button>':'');
@@ -1164,6 +1166,7 @@ document.addEventListener('scroll',e=>{const source=e.target;if(!source||!source
 function setSidebarCollapsed(on){let shell=document.querySelector('.integrated-shell');if(!shell)return;let collapsed=!!on&&innerWidth>760;shell.classList.toggle('sidebar-collapsed',collapsed);localStorage.setItem('affinityneo_sidebar_collapsed',collapsed?'1':'0');let b=$('ariaCollapseBtn');if(b){b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+(collapsed?'M9 5.5 15 12l-6 6.5':'M15 5.5 9 12l6 6.5')+'"/></svg>';b.title=collapsed?'사이드바 펼치기':'사이드바 접기';b.setAttribute('aria-label',b.title)}document.querySelectorAll('.aria-nav[data-kind]').forEach(b=>{let label=b.querySelector('span:not(.aria-ico):not(.aria-nav-badge)');if(label)b.title=collapsed?label.textContent:''})}
 function toggleSidebar(){let shell=document.querySelector('.integrated-shell');if(shell)setSidebarCollapsed(!shell.classList.contains('sidebar-collapsed'))}
 
+function vAI(){return '<section class="aria-ai-page"><div id="ariaAiMount"></div></section>'}
 function render(){let priorScroll=[...document.querySelectorAll('.gb')].map(el=>el.scrollLeft),v=V(),tb=v.kind==='table'||(v.kind==='afterhours'&&innerWidth>760);if(tb&&!v.cfg)v.cfg=newCfg();$('tb').style.display=tb?'flex':'none';if(tb){updTb();if($('search').value!==v.cfg.q)$('search').value=v.cfg.q}
 document.body.dataset.rowHeight='custom';document.body.style.setProperty('--row-height',(Number(S.uiSettings&&S.uiSettings.rowHeightPx)||48)+'px');$('content').innerHTML=(innerWidth<=760&&v.kind==='quickmemo')?(vQuickMemo()+vAfterHours()):({table:vTable,quickmemo:vQuickMemo,afterhours:vAfterHours,calendar:vCalendar,today:vToday,done:vDone,archive:vArchive,schedule:vSchedule,guide:vGuide})[v.kind]();document.querySelectorAll('.gb').forEach((el,i)=>{if(priorScroll[i]!=null)el.scrollLeft=priorScroll[i]});syncSidebar();updBar()}
 function applyTheme(n){document.documentElement.dataset.theme=n;localStorage.setItem('affinityneo_theme',n);let dark=n==='dark',b=$('sideThemeBtn');if(b){let ico=b.querySelector('svg');if(ico)ico.innerHTML=dark?'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>':'<path d="M20.4 15.3A8.6 8.6 0 0 1 8.7 3.6 8.8 8.8 0 1 0 20.4 15.3Z" fill="currentColor" stroke="none"/>';let label=b.querySelector('span:last-child');if(label)label.textContent=dark?'라이트 모드':'다크 모드';b.title=label?label.textContent:'테마 전환'}let meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=dark?'#20232b':'#f5f6f8'}function theme(){applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark')}
@@ -1183,6 +1186,7 @@ function ariaMobileGo(kind){
 }
 function ariaMobileSettingGo(kind){const ws=document.querySelector('.aria-workspace');ws.classList.remove('settings-mode','mobile-settings-mode');document.getElementById('ariaSettingsPanel').classList.remove('open');ariaMobileSetActive(kind==='schedule'?'settings':'settings');ariaGo(kind);}
 function ariaGo(kind){
+ if(kind==='ai'){closeM();const ws=document.querySelector('.aria-workspace'),panel=document.getElementById('ariaSettingsPanel');ws.classList.remove('settings-mode');panel.classList.remove('open');document.querySelectorAll('.aria-nav').forEach(b=>b.classList.toggle('active',b.dataset.kind==='ai'));$('tb').style.display='none';$('content').innerHTML=vAI();openGeminiPanel();return;}
  if(kind==='settings'){closeM();const ws=document.querySelector('.aria-workspace'),p=document.getElementById('ariaSettingsPanel');ws.classList.add('settings-mode');p.classList.add('open');ariaSettingsPanelRefresh();document.querySelectorAll('.aria-nav').forEach(b=>b.classList.remove('active'));return;}
  if(kind!=='ai')closeM();
  const ws=document.querySelector('.aria-workspace'),panel=document.getElementById('ariaSettingsPanel');if(kind!=='settings'){ws.classList.remove('settings-mode');panel.classList.remove('open');}
@@ -1198,7 +1202,7 @@ function ariaGo(kind){
   ariaNewChat();
   openGeminiPanel();
  }else{
-  ariaMobileSetActive('ai');
+  ariaGo('ai');
  }
 })();
 </script></div></div></body></html>
