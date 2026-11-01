@@ -1200,7 +1200,7 @@ function ariaMobileGo(kind){
  const ws=document.querySelector('.aria-workspace'),settings=document.getElementById('ariaSettingsPanel');
  if(kind==='settings'){ariaGo('settings');ariaMobileSetActive('settings');return;}
  ws.classList.remove('settings-mode','mobile-settings-mode');settings.classList.remove('open');ariaMobileSetActive(kind);
- if(kind==='ai'){ariaNewChat();openGeminiPanel();return;}
+ if(kind==='ai'){ariaNewChat();ariaGo('ai');return;}
  closeM(); ariaGo(kind);
 }
 function ariaMobileSettingGo(kind){const ws=document.querySelector('.aria-workspace');ws.classList.remove('settings-mode','mobile-settings-mode');document.getElementById('ariaSettingsPanel').classList.remove('open');ariaMobileSetActive(kind==='schedule'?'settings':'settings');ariaGo(kind);}
@@ -1219,7 +1219,7 @@ function ariaGo(kind){
  if(window.innerWidth<=760){
   ariaMobileSetActive('ai');
   ariaNewChat();
-  openGeminiPanel();
+  ariaGo('ai');
  }else{
   ariaNewChatHome();
   ariaGo('ai');
