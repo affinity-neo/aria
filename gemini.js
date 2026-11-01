@@ -183,7 +183,7 @@
       };
     });
     const selected=new Set((S.googleCalendar&&S.googleCalendar.selectedCalendarIds)||[]);
-    const calendarEvents=selected.size&&typeof gcalReadEvents==="function"?gcalReadEvents().filter(e=>selected.has(e.calendarId)&&e.status!=="cancelled").map(e=>({
+    const todayKey=typeof today==="function"?today():"",calendarEnd=typeof addD==="function"?addD(4):"",calendarEvents=selected.size&&typeof gcalReadEvents==="function"?gcalReadEvents().filter(e=>{const key=String(e.start&&(e.start.date||e.start.dateTime)||"").slice(0,10);return selected.has(e.calendarId)&&e.status!=="cancelled"&&key>=todayKey&&(!calendarEnd||key<calendarEnd)}).map(e=>({
       title:e.summary||"",start:e.start||{},end:e.end||{},transparency:e.transparency||"opaque",
       allDay:!!(e.start&&e.start.date),calendarId:e.calendarId
     })):[];
@@ -202,8 +202,9 @@
       if(requested.length!==candidates.length||new Set(requested).size!==requested.length||requested.some(k=>!expected.has(k))){
         throw new Error("AI가 모든 업무를 중복 없이 정렬하지 못했어요. 기존 순서는 변경하지 않았습니다. 다시 실행해 주세요.");
       }
-      const realOrder=requested.map(k=>keyMap.get(k));
+      const realOrder=requested.map(k=>keyMap.get(k)),currentKeys=executionEntries().map(executionKey);
       if(realOrder.some(k=>!k)||new Set(realOrder).size!==items.length)throw new Error("업무 연결을 확인하지 못해 기존 실행 순서를 유지했어요.");
+      if(currentKeys.length!==items.length||items.some(x=>!currentKeys.includes(executionKey(x))))throw new Error("정렬 중 업무 목록이 변경되어 기존 순서를 유지했어요. 다시 실행해 주세요.");
       S.executionOrder=realOrder;
       if(typeof save==="function")save();
       if(typeof syncTouch==="function")syncTouch();
