@@ -54,9 +54,9 @@
   };
   window.ariaNewChat=function(){
     const a=readRooms(),now=Date.now(),r={id:makeChatId(),title:"새 채팅",titleLocked:false,createdAt:now,updatedAt:now,messages:[]};a.push(r);writeRooms(a);localStorage.setItem(ACTIVE_CHAT_KEY,r.id);
-    const q=$id("ariaChatSearch");if(q)q.value="";renamingChatId=null;renderAriaChat();const input=$id("ariaChatInput");if(input)input.focus();
+    const q=$id("ariaChatSearch");if(q)q.value="";renamingChatId=null;renderAriaChat();const input=$id("ariaChatInput");if(input){input.value="";input.focus();}
   };
-  window.ariaSelectChat=function(id){if(!readRooms().some(r=>r.id===id))return;localStorage.setItem(ACTIVE_CHAT_KEY,id);renamingChatId=null;renderAriaChat();const input=$id("ariaChatInput");if(input)input.focus()};
+  window.ariaSelectChat=function(id){if(!readRooms().some(r=>r.id===id))return;localStorage.setItem(ACTIVE_CHAT_KEY,id);renamingChatId=null;renderAriaChat();const input=$id("ariaChatInput");if(input){input.value="";input.focus();}};
   window.filterAriaChats=function(q){renderAriaChatList(String(q||""))};
   window.ariaRenameChat=function(id){renamingChatId=id;renderAriaChatList(($id("ariaChatSearch")||{}).value||"");const input=$id("ariaRenameInput");if(input){input.focus();input.select()}};
   window.ariaCommitRename=function(id,value){const v=String(value||"").replace(/\s+/g," ").trim();if(!v){if(typeof toast==="function")toast("채팅방 이름을 입력해 주세요.");return}const a=readRooms(),r=a.find(x=>x.id===id);if(!r)return;r.title=v.slice(0,80);r.titleLocked=true;r.updatedAt=Date.now();writeRooms(a);renamingChatId=null;renderAriaChat()};
