@@ -31,10 +31,13 @@
   function snapshot(){
     if(typeof S==="undefined"||!S||!Array.isArray(S.tasks))throw new Error("일정 데이터를 불러오지 못했어요. 새로고침해 주세요.");
     const tasks=S.tasks.map(t=>({
-      id:t.id,group:t.company||"",task:t.task||"",status:t.status||"",
-      priority:t.priority||"",assignee:t.person||"",deadline:t.due||"",
-      plannedDate:t.planDate||(t.cx&&t.cx.planDate)||"",memo:t.memo||"",
-      subtasks:(t.subs||[]).map(s=>({task:s.task||"",status:s.status||"",deadline:s.due||""}))
+      id:t.id,taskKey:String(t.id)+":0",group:t.company||"",task:t.task||"",status:t.status||"",
+      urgency:t.priority||"",assignee:t.person||"",deadline:t.due||"",
+      plannedDate:t.planDate||(t.cx&&t.cx.planDate)||"",estimatedMinutes:Number(t.cx&&t.cx.estimateMin)||0,
+      focusType:t.cx&&t.cx.focusType||"",workType:t.cx&&t.cx.workType||"",
+      executionEligible:!isD(t)&&!isAfterHoursTask(t)&&!isWaitingTask(t)&&!String(t.task||"").includes("📌"),
+      memo:t.memo||"",
+      subtasks:(t.subs||[]).map(s=>({id:s.id,taskKey:String(t.id)+":"+String(s.id),task:s.task||"",status:s.status||"",deadline:s.due||"",plannedDate:s.planDate||"",assignee:s.person||t.person||"",urgency:s.priority||t.priority||"",executionEligible:!isD(t)&&!isAfterHoursTask(t)&&!isWaitingTask(t)&&!isD(s)}))
     }));
     return {capturedAt:new Date().toISOString(),groups:(S.groups||[]).map(g=>typeof g==="string"?g:g.name).filter(Boolean),tasks};
   }
@@ -112,6 +115,19 @@
   function applyAriaAction(action){
     if(!action||typeof action!=="object")return null;
     const type=action.type||action.action;
+    if(type==="set_execution_order"){
+      const valid=dashboardWorkEntries(S.tasks.filter(t=>!isD(t))).map(x=>String(x.id)+":"+String(x.subId||0));
+      const allowed=new Set(valid),requested=Array.isArray(action.taskKeys)?action.taskKeys.map(String):[];
+      if(!requested.length)return "AI가 실행 순서 결과를 만들지 못했어요. 다시 요청해 주세요.";
+      if(new Set(requested).size!==requested.length||requested.some(k=>!allowed.has(k)))return "AI가 반환한 실행 순서에 중복되거나 보드에 없는 업무가 있어 적용하지 않았어요.";
+      const remaining=(Array.isArray(S.executionOrder)?S.executionOrder.map(String):[]).filter(k=>allowed.has(k)&&!requested.includes(k));
+      const already=new Set([...requested,...remaining]);
+      S.executionOrder=requested.concat(remaining,valid.filter(k=>!already.has(k)));
+      if(typeof save==="function")save();
+      if(typeof syncTouch==="function")syncTouch();
+      if(typeof render==="function")render();
+      return "AI가 "+requested.length+"개 업무의 실행 순서를 정리했어요. 대시보드와 아침 브리핑에 같은 순서로 반영했어요. 기존 긴급도는 변경하지 않았어요.";
+    }
     if(type==="move_task"){
       const found=findTask(action),to=String(action.toGroup||action.targetGroup||"").trim();
       if(found.matches.length!==1)return found.matches.length?"같은 이름의 업무가 여러 개 있어요. 원래 그룹을 포함해 다시 지정해 주세요.":"말씀하신 업무를 현재 보드에서 찾지 못했어요. 업무명과 원래 그룹을 다시 확인해 주세요.";
@@ -139,6 +155,12 @@
     }
     return null;
   }
+  window.runAriaExecutionOrder=function(){
+    if(typeof window.openGeminiPanel==="function")window.openGeminiPanel();
+    const input=$id("ariaChatInput");if(!input)return;
+    input.value="현재 업무 관리 보드의 실행 순서를 AI가 정리해 줘. 미완료 일반 업무와 하위 업무 중 executionEligible이 true인 항목을 모두 포함해 1번부터 마지막까지 순위를 매겨. 이번 주 실행 예정일, 실제 마감일, 수익·매출·사업 영향, 선행 관계, 대기 여부, 예상 시간을 함께 판단해. 기존 긴급도는 절대 변경하지 말고, 순위만 set_execution_order action의 taskKeys 배열로 반환해. 각 항목의 taskKey를 그대로 사용하고 누락이나 중복 없이 정렬해.";
+    window.sendAriaMessage();
+  };
   window.sendAriaMessage=async function(){
     const input=$id("ariaChatInput");if(!input)return;
     const question=input.value.trim();if(!question)return;
