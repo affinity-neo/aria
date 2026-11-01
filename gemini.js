@@ -59,6 +59,7 @@
     if(form)form.addEventListener("submit",e=>{e.preventDefault();sendAriaMessage()});
     if(input){input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAriaMessage()}});input.focus();}
   };
+  window.ariaNewChatHome=function(){if(readChat().length)window.ariaNewChat();};
   window.ariaNewChat=function(){
     const a=readRooms(),now=Date.now(),r={id:makeChatId(),title:"새 채팅",titleLocked:false,createdAt:now,updatedAt:now,messages:[]};a.push(r);writeRooms(a);localStorage.setItem(ACTIVE_CHAT_KEY,r.id);
     const q=$id("ariaChatSearch");if(q)q.value="";renamingChatId=null;renderAriaChat();const input=$id("ariaChatInput");if(input){input.value="";input.focus();}
