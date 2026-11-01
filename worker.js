@@ -68,7 +68,7 @@ function openRouterUserMessage(error){
 }
 /* Google Calendar: read/write OAuth, encrypted refresh tokens, user-selected calendars */
 
-const GOOGLE_SCOPE="https://www.googleapis.com/auth/calendar.events";
+const GOOGLE_SCOPE="https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.calendarlist.readonly";
 
 const GOOGLE_APP_URL="https://affinity-neo.github.io/aria/";
 
