@@ -1010,9 +1010,9 @@ function morningRoutineText(){
  lines.push('','[어제 저녁 메모]',yesterdayNote||'남겨진 메모가 없어요.');
  return lines.join('\n');
 }
-async function openMorningRoutine(){
+async function openMorningRoutine(refreshed=false){
  const connected=!!(S.googleCalendar&&S.googleCalendar.connected),selected=!!(S.googleCalendar&&S.googleCalendar.selectedCalendarIds&&S.googleCalendar.selectedCalendarIds.length);
- const syncOk=connected&&selected?!!gcalReadEvents().length:false; if(connected&&selected)gcalRefresh(true,false).catch(()=>{});
+ const syncOk=connected&&selected&&(refreshed||!!gcalReadEvents().length); if(connected&&selected&&!refreshed)gcalRefresh(true,false).then(ok=>{if(ok&&$('mb').classList.contains('open'))openMorningRoutine(true)}).catch(()=>{});
  const T=today(),r=dailyReport(T),classes=routineCalendarEvents(T),entries=executionOrdered(dashboardWorkEntries(S.tasks.filter(t=>!isD(t))));
  const plan=entries.filter(x=>x.planDate===T),due=entries.filter(x=>x.due===T),after=afterHoursTasksFor(T),yesterdayNote=dailyReport(addD(-1)).eveningNote;
  const unique=new Map();plan.concat(due).forEach(x=>unique.set(routineWorkKey(x),x));
@@ -1039,8 +1039,8 @@ function eveningRoutineText(){
  if(r.eveningNote)lines.push('','[오늘 저녁 메모]',r.eveningNote);
  return lines.join('\n');
 }
-async function openEveningRoutine(){
- if(S.googleCalendar&&S.googleCalendar.connected)gcalRefresh(true,false).catch(()=>{});
+function openEveningRoutine(refreshed=false){
+ if(S.googleCalendar&&S.googleCalendar.connected&&!refreshed)gcalRefresh(true,false).then(ok=>{if(ok&&$('mb').classList.contains('open'))openEveningRoutine(true)}).catch(()=>{});
  const T=today(),tomorrow=addD(1),r=dailyReport(T),classes=routineCalendarEvents(tomorrow),after=afterHoursTasksFor(tomorrow),todayPlan=executionOrdered(dashboardWorkEntries(S.tasks.filter(t=>!isD(t)))).filter(x=>x.planDate===T||x.due===T),todayAfter=afterHoursTasksFor(T);
  const classRows=classes.map(e=>'<label class="routine-check"><input type="checkbox" '+((r.eveningDone||[]).includes('class:'+e.key)?'checked':'')+' onchange="toggleRoutineCheck(\'evening\',\'class:'+e.key+'\',this.checked)"><span>'+esc(e.name)+'</span><small>'+esc((e.time||'시간 미정')+' · '+e.origin)+'</small></label>').join('');
  const todayRows=todayPlan.map(x=>'<label class="routine-check"><input type="checkbox" '+((r.eveningDone||[]).includes(routineWorkKey(x))?'checked':'')+' onchange="toggleRoutineCheck(\'evening\',\''+routineWorkKey(x)+'\',this.checked)"><b class="exec-rank">'+weeklyExecutionRank(x)+'</b><span>'+esc(routineWorkLine(x))+'</span></label>').join('');
