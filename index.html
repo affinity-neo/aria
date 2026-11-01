@@ -172,7 +172,7 @@ body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Ne
 .aria-workspace .box{border-radius:15px;border-color:var(--line);box-shadow:0 1px 2px rgba(17,27,51,.025)}
 .aria-workspace .primary{background:var(--blue);border-color:var(--blue)}.aria-workspace .primary:hover{background:#2347B8}
 .aria-workspace #pop,.aria-workspace #toast,.aria-workspace .mb{z-index:30}
-@media(max-width:760px){.integrated-shell{display:flex;flex-direction:column}.aria-side{order:2;flex:none;flex-direction:row;gap:3px;padding:6px 7px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);background:rgba(255,255,255,.94);backdrop-filter:blur(18px);overflow-x:auto;overflow-y:hidden}.aria-brand,.aria-nav-label,.aria-side-bottom{display:none}.aria-nav{width:auto;min-width:68px;min-height:52px;flex:1;flex-direction:column;justify-content:center;gap:3px;padding:5px 6px;border-radius:9px;font-size:10px;white-space:nowrap}.aria-ico{font-size:17px}.aria-workspace{order:1;flex:1;overflow:auto}.aria-workspace>header{padding:9px 12px;min-height:54px}.aria-workspace>main{padding:12px 10px 26px}}
+@media(max-width:760px){.integrated-shell{display:flex;flex-direction:column}.aria-side{display:none!important}.aria-workspace{order:1;flex:1;min-height:0;overflow:auto;padding-bottom:calc(64px + env(safe-area-inset-bottom))}.aria-workspace>header{display:none}.aria-workspace>main{padding:12px 10px 26px}.aria-mobile-nav{position:fixed;z-index:25;left:0;right:0;bottom:0;display:flex;align-items:stretch;justify-content:space-around;gap:2px;padding:6px 7px calc(6px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--sf) 94%,transparent);backdrop-filter:blur(18px);border-top:1px solid var(--line)}.aria-mobile-nav button{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 3px;border:0;border-radius:10px;color:var(--mu);font-size:10px;white-space:nowrap}.aria-mobile-nav button.active{color:var(--blue);background:var(--sel);font-weight:700}.aria-mobile-nav svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.aria-mobile-settings{display:none;max-width:720px;margin:14px auto;padding:8px 4px 24px}.aria-mobile-settings.open{display:block}.aria-mobile-settings h2{font-size:23px;margin:4px 0 6px}.aria-mobile-settings>p{font-size:12px;color:var(--mu);margin:0 0 18px}.aria-mobile-setting{display:flex;align-items:center;gap:12px;width:100%;padding:15px 13px;margin:8px 0;text-align:left;border:1px solid var(--line);border-radius:13px;background:var(--sf)}.aria-mobile-setting .ms-icon{width:36px;height:36px;border-radius:11px;background:var(--sf2);display:grid;place-items:center;color:var(--blue);flex:none}.aria-mobile-setting .ms-copy{flex:1;min-width:0}.aria-mobile-setting b{display:block;font-size:13px}.aria-mobile-setting small{display:block;color:var(--mu);font-size:11px;margin-top:3px}.aria-mobile-setting .ms-arrow{color:var(--mu)}.mb.open{position:fixed!important;inset:0!important;z-index:100!important;display:flex!important;align-items:stretch!important;justify-content:stretch!important;padding:0!important;background:var(--bg)!important;backdrop-filter:none!important}.mb.open .md{width:100%!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important}.mb.open .aria-chat-shell{height:100dvh!important;padding-top:env(safe-area-inset-top)}.mb.open .aria-chat-head{display:none!important}.mb.open .aria-chat-sidebar,.mb.open .aria-chat-chipbar,.mb.open .aria-chat-settings{display:none!important}.mb.open .aria-chat-body{display:flex!important;flex:1!important;min-height:0!important}.mb.open .aria-chat-workspace{padding-top:12px}.mb.open #ariaChatLog{padding:22px 17px 12px}.mb.open .aria-chat-composer{padding:10px 13px calc(12px + env(safe-area-inset-bottom));background:var(--sf)}.mb.open .aria-chat-input{min-height:48px;border-radius:24px;padding:13px 17px}.mb.open .aria-chat-composer .primary{width:48px;height:48px!important;min-width:48px;padding:0!important;border-radius:50%!important;font-size:0}.mb.open .aria-chat-composer .primary:after{content:'↑';font-size:19px}.mb.open~.aria-mobile-nav{display:none!important}.aria-workspace.mobile-settings-mode>main>.stickytools,.aria-workspace.mobile-settings-mode>main>#content{display:none!important}.aria-workspace.mobile-settings-mode .aria-mobile-settings{display:block}}
 /* Aria · native-feeling interface refinement */
 :root{--side-bg:#f7f8fa;--side-hover:#eceff4;--side-text:#4b5563;--side-muted:#8a93a1;--blue:#3478f6;--bg:#f5f6f8;--sf:#fff;--sf2:#f1f2f5;--line:#e5e7eb;--tx:#20242b;--mu:#737b87;--hov:#f0f2f5;--sel:#e8f0ff;--inp:#f5f8ff;--green:#269b70}
 [data-theme=dark]{--side-bg:#1d2027;--side-hover:#2b3039;--side-text:#d5d9e0;--side-muted:#929aa7;--bg:#17191e;--sf:#22262d;--sf2:#2a2f37;--line:#363c46;--tx:#edf0f4;--mu:#9aa2ae;--hov:#2c323b;--sel:#2c3c56;--inp:#252f40;--blue:#78aaff;--green:#55c69a;color-scheme:dark}
@@ -521,6 +521,20 @@ td{height:34px!important}
 <div class="tb" id="tb"><input class="search" id="search" placeholder="검색" oninput="cfg().q=this.value;render()"><button id="b-f" onclick="openP(event,'filter')"></button><button id="b-s" onclick="openP(event,'sort')"></button><button id="b-h" onclick="openP(event,'hide')"></button><button id="b-g" onclick="openP(event,'group')"></button><button id="b-row" onclick="openP(event,'rows')">행 간격</button><div class="abar" id="abar"><b id="selc">0개 선택</b><button data-need onclick="openP(event,'bm')">그룹 이동</button><button data-need onclick="bulkDuplicate()">복제</button><button data-need class="danger" onclick="bulkDelete()">삭제</button><button data-need onclick="clearSel()">선택 해제</button></div></div></div>
 <div id="content" class="board"></div>
 </main>
+<section id="ariaMobileSettings" class="aria-mobile-settings" aria-label="설정">
+<h2>설정</h2><p>ARIA 사용 환경과 데이터 연결을 관리해요.</p>
+<button class="aria-mobile-setting" onclick="ariaMobileSettingGo('schedule')"><span class="ms-icon">◷</span><span class="ms-copy"><b>시간 설정</b><small>업무 시간과 개인 시간 기준</small></span><span class="ms-arrow">›</span></button>
+<button class="aria-mobile-setting" onclick="ariaMobileSettingGo('done')"><span class="ms-icon">✓</span><span class="ms-copy"><b>완료 보드</b><small>완료한 업무와 복원</small></span><span class="ms-arrow">›</span></button>
+<button class="aria-mobile-setting" onclick="theme();ariaMobileSettingsRefresh()"><span class="ms-icon">◐</span><span class="ms-copy"><b>다크 모드</b><small id="ariaMobileThemeLabel">화면 테마 전환</small></span><span class="ms-arrow">›</span></button>
+<button class="aria-mobile-setting" onclick="syncUI()"><span class="ms-icon">↻</span><span class="ms-copy"><b>동기화</b><small>기기 간 데이터 연결 및 상태</small></span><span class="ms-arrow">›</span></button>
+</section>
+<nav class="aria-mobile-nav" id="ariaMobileNav" aria-label="주요 메뉴">
+<button data-mobile="ai" class="active" onclick="ariaMobileGo('ai')"><svg viewBox="0 0 24 24"><path d="M12 3 14 9.5 21 12l-7 2.5L12 21l-2-6.5L3 12l7-2.5L12 3Z"/></svg><span>ARIA</span></button>
+<button data-mobile="table" onclick="ariaMobileGo('table')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg><span>업무</span></button>
+<button data-mobile="quickmemo" onclick="ariaMobileGo('quickmemo')"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg><span>메모</span></button>
+<button data-mobile="calendar" onclick="ariaMobileGo('calendar')"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>캘린더</span></button>
+<button data-mobile="settings" onclick="ariaMobileGo('settings')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.5.9l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.5-.9l-1.7.6-1.4-2.4 1.4-1.1a7 7 0 0 1 0-1.8l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.5-.9l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.5.9l1.7-.6 1.4 2.4-1.4 1.1a7 7 0 0 1 0 1.8Z"/></svg><span>설정</span></button>
+</nav>
 <div id="pop"></div><div id="toast"></div><div class="mb" id="mb"><div class="md" id="md"></div></div>
 <script>
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1142,9 +1156,31 @@ function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader
 applyTheme(document.documentElement.dataset.theme||'light');
 load();setSidebarCollapsed(localStorage.getItem('affinityneo_sidebar_collapsed')==='1');render();syncInit();gcalAutoInit();
 </script><script src="gemini.js"></script><script>
+function ariaMobileSetActive(kind){document.querySelectorAll('#ariaMobileNav button').forEach(b=>b.classList.toggle('active',b.dataset.mobile===kind));}
+function ariaMobileSettingsRefresh(){const e=document.getElementById('ariaMobileThemeLabel');if(e)e.textContent=document.documentElement.dataset.theme==='dark'?'현재 다크 모드':'현재 라이트 모드';}
+function ariaMobileGo(kind){
+ if(innerWidth>760)return;
+ const ws=document.querySelector('.aria-workspace'),settings=document.getElementById('ariaMobileSettings');
+ if(kind==='settings'){ws.classList.add('mobile-settings-mode');settings.classList.add('open');ariaMobileSetActive('settings');ariaMobileSettingsRefresh();return;}
+ ws.classList.remove('mobile-settings-mode');settings.classList.remove('open');ariaMobileSetActive(kind);
+ if(kind==='ai'){ariaNewChat();openGeminiPanel();return;}
+ ariaGo(kind);
+}
+function ariaMobileSettingGo(kind){const ws=document.querySelector('.aria-workspace');ws.classList.remove('mobile-settings-mode');document.getElementById('ariaMobileSettings').classList.remove('open');ariaMobileSetActive(kind==='schedule'?'settings':'settings');ariaGo(kind);}
 function ariaGo(kind){
  if(kind==='ai'){document.querySelectorAll('.aria-nav').forEach(b=>b.classList.remove('active'));const hit=document.querySelector('.aria-nav[data-kind="ai"]');if(hit)hit.classList.add('active');openGeminiPanel();return}
  const v=S.views.find(x=>x.kind===kind)||(kind==='today'?S.views.find(x=>x.kind==='today'):null);
  if(v)setView(v.id);else toast('해당 화면을 찾지 못했어요.');
 }
+</script>
+<script>
+(function(){
+ if(window.innerWidth<=760){
+  ariaMobileSetActive('ai');
+  ariaNewChat();
+  openGeminiPanel();
+ }else{
+  ariaMobileSetActive('ai');
+ }
+})();
 </script></div></div></body></html>
