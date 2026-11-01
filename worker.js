@@ -66,7 +66,7 @@ function openRouterUserMessage(error){
   if(error&&error.name==="TypeError")return "AI 서비스 연결에 실패했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요."; 
   return "AI 요청 처리 중 문제가 발생했어요. 잠시 뒤 다시 시도해 주세요."; 
 }
-/* Google Calendar: read-only OAuth, encrypted refresh tokens, user-selected calendars */
+/* Google Calendar: read/write OAuth, encrypted refresh tokens, user-selected calendars */
 
 const GOOGLE_SCOPE="https://www.googleapis.com/auth/calendar.events";
 
