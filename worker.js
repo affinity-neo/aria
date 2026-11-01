@@ -29,13 +29,13 @@ function extractJson(value) {
 
 }
 
-async function callModel(model,messages,key,fallbackModels=[]){
+async function callModel(model,messages,key,fallbackModels=[],maxTokens=1200){
   const modelList=[...new Set([model,...fallbackModels].filter(Boolean))];
   let lastError=null;
   for(let attempt=0;attempt<2;attempt++){
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),50000);
     try{
-      const response=await fetch(UPSTREAM_URL,{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json","HTTP-Referer":"https://affinity-neo.github.io/aria/","X-OpenRouter-Title":"Aria Workspace"},body:JSON.stringify({models:modelList,messages,temperature:0.15,max_tokens:1200,provider:{allow_fallbacks:true}}),signal:controller.signal});
+      const response=await fetch(UPSTREAM_URL,{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json","HTTP-Referer":"https://affinity-neo.github.io/aria/","X-OpenRouter-Title":"Aria Workspace"},body:JSON.stringify({models:modelList,messages,temperature:0.15,max_tokens:Math.max(1200,Math.min(9000,Number(maxTokens)||1200)),provider:{allow_fallbacks:true}}),signal:controller.signal});
       const data=await response.json().catch(()=>({}));
       if(!response.ok){const error=new Error("OpenRouter "+response.status+": "+String(data.error&&data.error.message||"요청 실패"));error.status=response.status;error.errorType=data.error&&data.error.metadata&&data.error.metadata.error_type||data.error&&data.error.code||"";error.retryAfter=response.headers.get("Retry-After")||"";error.requestId=response.headers.get("x-request-id")||response.headers.get("x-openrouter-generation-id")||"";throw error;}
       const answer=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
@@ -292,6 +292,46 @@ async function gcalUpdateEvent(request,env,origin){
   return json({event:{id:event.id,calendarId,summary:event.summary||input.summary||"",description:event.description||"",start:event.start||start,end:event.end||end,transparency:event.transparency||"opaque",status:event.status||"confirmed",extendedProperties:event.extendedProperties||{},htmlLink:event.htmlLink||""}},200,origin);
  }catch(e){return json({error:String(e.message||"Google Calendar 일정을 수정하지 못했어요.")},502,origin);}
 }
+
+function executionKeysFromText(value){
+ const parsed=extractJson(value);
+ if(!parsed||typeof parsed!=="object")return null;
+ const keys=Array.isArray(parsed.taskKeys)?parsed.taskKeys:Array.isArray(parsed.order)?parsed.order:null;
+ return keys?keys.map(x=>String(x)):null;
+}
+function validateExecutionKeys(keys,candidates){
+ if(!Array.isArray(keys)||keys.length!==candidates.length)return false;
+ const allowed=new Set(candidates.map(x=>String(x.key)));
+ if(allowed.size!==candidates.length)return false;
+ const seen=new Set();
+ for(const key of keys){if(!allowed.has(key)||seen.has(key))return false;seen.add(key)}
+ return seen.size===allowed.size;
+}
+async function rankExecutionCandidates(input,env,origin){
+ const candidates=Array.isArray(input.candidates)?input.candidates:[],calendarEvents=Array.isArray(input.calendarEvents)?input.calendarEvents:[];
+ if(!candidates.length)return json({error:"실행 순서를 정할 업무가 없어요."},400,origin);
+ if(candidates.length>180)return json({error:"한 번에 정렬할 업무가 너무 많아요. 업무 필터를 적용한 뒤 다시 시도해 주세요."},413,origin);
+ const keys=new Set();
+ for(const item of candidates){if(!item||!/^T\d{3}$/.test(String(item.key||""))||keys.has(String(item.key))||!String(item.task||"").trim())return json({error:"업무 후보 데이터에 중복되거나 잘못된 항목이 있어요. 기존 실행 순서는 유지했어요."},400,origin);keys.add(String(item.key))}
+ if(JSON.stringify({candidates,calendarEvents}).length>120000)return json({error:"전달할 업무와 캘린더 데이터가 너무 많아요."},413,origin);
+ const system="너는 한국어 업무 실행 순서 전문가다. 업무 후보를 실제로 실행할 순서로 정렬한다. 반드시 JSON 객체 하나만 출력한다. 형식은 {\"taskKeys\":[\"T001\",\"T002\"]}이다. 설명, Markdown, 코드펜스, 숫자 순위, 업무 ID는 출력하지 않는다. 제공된 key를 그대로 사용하고, 모든 후보 key를 정확히 한 번씩 포함한다. 키를 중복하거나 누락하거나 새로 만들지 않는다. 기존 urgency는 중요한 참고 정보지만 실행 순위 번호로 바꾸거나 업무 데이터로 수정하지 않는다. 실행 예정일과 실제 마감일은 다르다. 실행 예정일은 실제 작업 날짜이며, 마감일이 멀다는 이유로 실행을 미루지 않는다. 실제 마감이 가까운 업무, 매출·수익·고객·출간·사업 결과에 직접 영향을 주는 업무, 다른 업무의 선행 조건인 업무, 대기 상태에서 재개 가능한 업무, 예상 시간이 짧아 빠르게 끝낼 수 있는 업무를 함께 고려한다. 캘린더 일정과 겹치는 시간에 업무를 배치하지 않는다.";
+ const user="기준 날짜: "+String(input.today||"")+"\n캘린더 일정(읽기 전용, 보드 업무로 만들지 않음):\n"+JSON.stringify(calendarEvents)+"\n업무 후보(key마다 서로 다른 실제 업무):\n"+JSON.stringify(candidates)+"\n모든 key를 중복 없이 정확히 한 번씩만 넣어 가장 먼저 할 업무부터 정렬하세요.";
+ const low=env.OPENROUTER_LOW_MODEL||LOW_MODEL,backup=env.OPENROUTER_LOW_FALLBACK_MODEL||LOW_FALLBACK_MODEL;
+ const callMessages=[{role:"system",content:system},{role:"user",content:user}];
+ const tokens=Math.min(9000,Math.max(1800,candidates.length*95));
+ let result;
+ try{result=await callModel(low,callMessages,env.OPENROUTER_API_KEY,backup===low?[]:[backup],tokens)}
+ catch(error){logOpenRouterFailure("execution_order",low,error);return json({error:openRouterUserMessage(error),code:"execution_order_upstream_error"},502,origin)}
+ let taskKeys=executionKeysFromText(result.text);
+ if(!validateExecutionKeys(taskKeys,candidates)){
+  const repair=[{role:"system",content:system},{role:"user",content:user},{role:"assistant",content:result.text.slice(0,12000)},{role:"user",content:"방금 결과는 사용할 수 없습니다. key 목록은 "+JSON.stringify(candidates.map(x=>x.key))+" 입니다. 모든 key를 중복 없이 정확히 한 번씩 넣어 {\"taskKeys\":[...]} JSON 하나만 다시 출력하세요."}];
+  try{const repaired=await callModel(low,repair,env.OPENROUTER_API_KEY,backup===low?[]:[backup],tokens);const next=executionKeysFromText(repaired.text);if(validateExecutionKeys(next,candidates)){taskKeys=next;result=repaired}}
+  catch(error){logOpenRouterFailure("execution_order_repair",low,error)}
+ }
+ if(!validateExecutionKeys(taskKeys,candidates))return json({error:"AI가 모든 업무를 중복 없이 정렬하지 못해 기존 실행 순서를 유지했어요. 다시 실행해 주세요.",code:"invalid_execution_order"},422,origin);
+ return json({taskKeys,modelUsed:result.model||low,count:taskKeys.length},200,origin);
+}
+
 async function gcalDisconnect(request,env,origin){
 
  const input=await request.json().catch(()=>({})),key=String(input.clientKey||"");if(!gcalKeyValid(key))return json({error:"연결 키가 올바르지 않아요."},400,origin);
@@ -338,7 +378,9 @@ export default {
 
     try {
 
-      const input=await request.json(),schedule=input.schedule,question=String(input.question||"").trim().slice(0,2000);
+      const input=await request.json();
+      if(input.mode==="execution_order")return rankExecutionCandidates(input,env,origin);
+      const schedule=input.schedule,question=String(input.question||"").trim().slice(0,2000);
 
       if(!schedule||!Array.isArray(schedule.tasks))return json({error:"일정 데이터 형식이 올바르지 않아요."},400,origin);
 
@@ -361,9 +403,9 @@ export default {
         "마감일 변경 action: {\"type\":\"set_due\",\"taskName\":\"업무명\",\"fromGroup\":\"원래 그룹명\",\"deadline\":\"YYYY-MM-DD\"}.",
 
         "담당자 변경 action: {\"type\":\"set_assignee\",\"taskName\":\"업무명\",\"fromGroup\":\"원래 그룹명\",\"assignee\":\"담당자\"}. 완료 action: {\"type\":\"complete_task\",\"taskName\":\"업무명\",\"fromGroup\":\"원래 그룹명\"}.",
-        "실행 순서 정리 요청일 때만 action을 {\"type\":\"set_execution_order\",\"taskKeys\":[\"taskKey\",...]} 형식으로 반환한다. taskKeys는 executionEligible이 true인 업무와 하위 업무를 모두 포함하고, 각 taskKey를 정확히 한 번씩만 사용하며, 먼저 실행할 항목부터 마지막 항목까지 배열한다.",
-        "실행 순서는 실행 예정일, 실제 마감일, 수익·매출·사업 영향, 선행 작업과 다른 업무를 막고 있는 정도, 현재 상태와 대기 여부, 예상 소요 시간, 업무 시간 내 처리 가능성을 함께 고려한다. urgency는 기존 긴급도이므로 순위 숫자로 바꾸거나 수정하지 않는다.",
-        "taskKey는 실제 데이터의 값을 그대로 사용하고 새로 만들지 않는다. executionEligible이 false인 항목은 제외한다. 누락이나 중복 없이 정렬할 수 없으면 action을 반환하지 말고 짧게 설명한다.",
+
+
+
 
         "사용자가 'A 그룹 안에 있는 B 업무'라고 하면 fromGroup은 A, taskName은 B다. 업무명과 그룹명은 JSON에 있는 원문을 그대로 사용한다.",
 
