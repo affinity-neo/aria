@@ -469,8 +469,8 @@ td{height:34px!important}
 .apple-cal-dayhead.is-sun small{color:#e35d5b}.apple-cal-dayhead.is-sat small{color:#3478f6}
 .apple-cal-day-column.is-today{background-color:color-mix(in srgb,#3478f6 5%,var(--sf))}
 
-.apple-cal-day-column:before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(to bottom,color-mix(in srgb,var(--mu) 9%,transparent) 0 432px,transparent 432px 1056px,color-mix(in srgb,var(--mu) 9%,transparent) 1056px 1152px)}
-.apple-cal-day-column.is-today:before{background:linear-gradient(to bottom,color-mix(in srgb,var(--blue) 9%,transparent) 0 432px,transparent 432px 1056px,color-mix(in srgb,var(--blue) 9%,transparent) 1056px 1152px)}
+.apple-cal-day-column:before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(to bottom,color-mix(in srgb,var(--mu) 9%,transparent) 0 432px,transparent 432px 864px,color-mix(in srgb,var(--mu) 9%,transparent) 1056px 1152px)}
+.apple-cal-day-column.is-today:before{background:linear-gradient(to bottom,color-mix(in srgb,var(--blue) 9%,transparent) 0 432px,transparent 432px 864px,color-mix(in srgb,var(--blue) 9%,transparent) 1056px 1152px)}
 .apple-cal-hour-lines{z-index:1}
 .sbx th:nth-child(2),.sbx td:nth-child(2){box-shadow:inset -1px 0 var(--line)}
 .sbx table{table-layout:fixed;border-collapse:separate;border-spacing:0}
@@ -736,7 +736,7 @@ GL={};GV=[];
 let todayPlan=active.filter(t=>!isPinnedTask(t)&&(t.cx||{}).planDate===today()),minutes=todayPlan.reduce((n,t)=>n+Math.max(0,Number((t.cx||{}).estimateMin)||0),0),unestimated=todayPlan.filter(t=>!Number((t.cx||{}).estimateMin)).length,now=new Date(),currentMinute=now.getHours()*60+now.getMinutes(),elapsedMinutes=elapsedWorkMinutes(now),dayCalendarMinutes=fixedMinutesFor(today(),9*60),availableMinutes=Math.max(0,DAY_CAPACITY-dayCalendarMinutes),remainingFixedMinutes=fixedMinutesFor(today(),currentMinute),left=DAY_CAPACITY-elapsedMinutes-remainingFixedMinutes-minutes,overdue=active.filter(t=>!isPinnedTask(t)&&t.due&&diff(t.due)<0);
 let top=`<div class="table-command">
 <div class="table-command-head"><h2>전체 업무 관리</h2></div>
-<div class="capacity-card ${left<0?'capacity-over':''}"><div class="capacity-metrics"><div><strong>${formatHM(minutes)}</strong><span>오늘 배치한 업무</span>${unestimated?'<small>예상 시간 미입력 '+unestimated+'개</small>':''}</div><div><strong>${formatHM(DAY_CAPACITY)}</strong><span>오늘 가용시간 · 캘린더 반영</span></div><div class="capacity-final"><strong>${left<0?'−':''}${formatHM(left)}</strong><span>${left<0?'배치 초과':'캘린더·업무 배치 후 남음'}</span></div></div><div class="capacity-meter"><div class="capacity-track"><i style="width:${Math.min(100,Math.max(0,elapsedMinutes/DAY_CAPACITY*100))}%"></i></div><div class="capacity-labels"><span>09:00 시작</span><span>${Math.round(elapsedMinutes/DAY_CAPACITY*100)}% 업무시간 경과</span><span>18:00 종료</span></div></div><p class="capacity-note">오늘 가용시간은 09:00–18:00 중 점심 1시간을 제외한 8시간에서 Google Calendar 일정을 차감합니다. 실제 잔여시간은 이미 지난 업무시간과 현재 이후의 캘린더 일정, 오늘 배치한 업무 시간을 반영합니다.</p></div>
+<div class="capacity-card ${left<0?'capacity-over':''}"><div class="capacity-metrics"><div><strong>${formatHM(minutes)}</strong><span>오늘 배치한 업무</span>${unestimated?'<small>예상 시간 미입력 '+unestimated+'개</small>':''}</div><div><strong>${formatHM(DAY_CAPACITY)}</strong><span>오늘 가용시간 · 캘린더 반영</span></div><div class="capacity-final"><strong>${left<0?'−':''}${formatHM(left)}</strong><span>${left<0?'배치 초과':'캘린더·업무 배치 후 남음'}</span></div></div><div class="capacity-meter"><div class="capacity-track"><i style="width:${Math.min(100,Math.max(0,elapsedMinutes/DAY_CAPACITY*100))}%"></i></div><div class="capacity-labels"><span>09:00 시작</span><span>${Math.round(elapsedMinutes/DAY_CAPACITY*100)}% 업무시간 경과</span><span>18:00 종료</span></div></div><p class="capacity-note">오늘 가용시간은 09:00–18:00 중 점심시간을 제외한 업무 가능 시간에서 Google Calendar 일정을 차감합니다. 실제 잔여시간은 이미 지난 업무시간과 현재 이후의 캘린더 일정, 오늘 배치한 업무 시간을 반영합니다.</p></div>
 <div class="table-quickstats"><div><b>${active.length}</b><span>집중해서 볼 업무</span></div><div><b>${overdue.length}</b><span>마감 지연</span></div></div>
 
 </div>`;
@@ -808,6 +808,7 @@ const options=['홀딩','비수익','핵심','운영','수업 과제','바이브
 return `<div class="box archive-view"><div class="archive-head"><div><h2>보관 업무</h2><p>지금 진행하지 않는 업무와 새 작업을 기다리는 고정 업무를 따로 모아둬요.</p></div><span class="archive-count">${parked.length+pinned.length}개</span></div><h3 class="archive-subhead">새 작업 대기</h3>${pinned.length?`<div class="archive-list">${pinned.map(t=>`<article class="archive-item"><div class="archive-item-main"><b>${esc(t.task)}</b><small>${t.subs.length}개 하위 아이템 모두 완료 · 새 요청 대기 중</small></div><button class="archive-restore" onclick="openPinnedTask(${t.id},true)">새 하위 아이템 추가</button></article>`).join('')}</div>`:'<div class="empty">새 작업을 기다리는 고정 업무가 없어요.</div>'}<h3 class="archive-subhead">보관 업무</h3>${parked.length?`<div class="archive-list">${parked.map(t=>`<article class="archive-item"><div class="archive-item-main"><b>${esc(t.task)}</b><small>${esc(t.company)} · ${esc(t.person||'담당자 미지정')} · ${esc(t.status)}</small></div><label class="archive-class"><select onchange="setCx(${t.id},'focusType',this.value)">${options.map(x=>`<option value="${x}" ${((t.cx||{}).focusType||'')===x?'selected':''}>${x}</option>`).join('')}</select></label><button class="archive-restore" onclick="setCx(${t.id},'focusType','운영')">업무 관리로 복귀</button></article>`).join('')}</div>`:'<div class="empty">보관 중인 업무가 없어요.</div>'}</div>`;
 }
 const CAL_START_HOUR=0,CAL_END_HOUR=24,CAL_HOUR_PX=48;
+const WORK_START_HOUR=9,WORK_END_HOUR=18;
 let calendarDragState=null,calendarSlotDraft=null,calendarPointerReady=false,calendarEditingEventId=null;
 function calendarDateFromKey(key){return new Date(key+"T00:00:00")}
 function calendarTimeText(minute){const h=Math.floor(minute/60),m=minute%60;return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")}
@@ -905,7 +906,7 @@ function vCalendar(){
  const heads=days.map(day=>{const d=calendarDateFromKey(day),weekday=d.getDay(),classes=['apple-cal-dayhead',day===today()?'is-today':'',weekday===0?'is-sun':'',weekday===6?'is-sat':''].filter(Boolean).join(' ');return '<div class="'+classes+'"><small>'+["일","월","화","수","목","금","토"][weekday]+'</small><b>'+d.getDate()+'</b></div>'}).join("");
  const hours=Array.from({length:CAL_END_HOUR-CAL_START_HOUR},(_,i)=>'<div class="apple-cal-hour-label">'+(CAL_START_HOUR+i)+'시</div>').join("");
  const allDay=days.map(day=>'<div class="apple-cal-allday-cell">'+(data.allDay[day].map(calendarEventHtml).join("")||'<span class="apple-cal-empty">—</span>')+'</div>').join("");
- const columns=days.map(day=>'<div class="apple-cal-day-column '+(day===today()?'is-today':'')+'" data-date="'+day+'" onpointerdown="calendarPointerDown(event,\''+day+'\')"><div class="apple-cal-hour-lines"></div><span class="apple-cal-outside-label start">업무 외 시간</span><span class="apple-cal-outside-label end">업무 외 시간</span>'+data.timed[day].map(calendarTimedEventHtml).join("")+'</div>').join("");
+ const columns=days.map(day=>'<div class="apple-cal-day-column '+(day===today()?'is-today':'')+'" data-date="'+day+'" onpointerdown="calendarPointerDown(event,\''+day+'\')"><div class="apple-cal-hour-lines"></div>'+data.timed[day].map(calendarTimedEventHtml).join("")+'</div>').join("");
  const status=!connected?"Google Calendar 연결 안 됨":!selected.length?"캘린더 선택 필요":gcalLastError?"동기화 오류 · "+gcalLastError:selected.join(" · ");
  return '<section class="apple-week-calendar"><div class="apple-cal-toolbar"><div class="apple-cal-title"><h2>'+monthLabel+'</h2><span>'+rangeLabel+'</span></div><div class="apple-cal-actions"><button onclick="calCursor=new Date();render()">오늘</button><button aria-label="이전 주" onclick="calShift(-1)">‹</button><button aria-label="다음 주" onclick="calShift(1)">›</button>'+(connected?'<button onclick="gcalOpenPicker()">캘린더 선택</button><button onclick="gcalRefresh()">동기화</button><button class="apple-cal-permission" onclick="gcalRenewPermissions()">Google 권한 갱신</button>':'<button class="primary" onclick="gcalConnect()">Google Calendar 연결</button>')+'</div></div><div class="apple-cal-status '+(gcalLastError?'is-error':'')+'"><span class="apple-cal-status-dot"></span>'+esc(status)+(fetched?' · 동기화 '+fetched.slice(0,16).replace('T',' '):'')+'</div><div class="apple-cal-scroll"><div class="apple-cal-dayheads"><div class="apple-cal-axis-head"></div>'+heads+'</div><div class="apple-cal-allday-row"><div class="apple-cal-axis-label">종일</div>'+allDay+'</div><div class="apple-cal-timegrid"><div class="apple-cal-time-axis">'+hours+'</div><div class="apple-cal-day-columns">'+columns+'</div></div></div><p class="apple-cal-hint">빈 시간대를 드래그하면 Google Calendar 새 일정 또는 기존 업무를 배치할 수 있어요. 외부 Google 일정은 업무보드에 자동으로 추가되지 않습니다.</p></section>';
 }
@@ -1007,7 +1008,7 @@ function morningRoutineText(){
 }
 async function openMorningRoutine(){
  const connected=!!(S.googleCalendar&&S.googleCalendar.connected),selected=!!(S.googleCalendar&&S.googleCalendar.selectedCalendarIds&&S.googleCalendar.selectedCalendarIds.length);
- const syncOk=connected&&selected?await gcalRefresh(true,false):false;
+ const syncOk=connected&&selected?!!gcalReadEvents().length:false; if(connected&&selected)gcalRefresh(true,false).catch(()=>{});
  const T=today(),r=dailyReport(T),classes=routineCalendarEvents(T),entries=executionOrdered(dashboardWorkEntries(S.tasks.filter(t=>!isD(t))));
  const plan=entries.filter(x=>x.planDate===T),due=entries.filter(x=>x.due===T),after=afterHoursTasksFor(T),yesterdayNote=dailyReport(addD(-1)).eveningNote;
  const unique=new Map();plan.concat(due).forEach(x=>unique.set(routineWorkKey(x),x));
@@ -1035,7 +1036,7 @@ function eveningRoutineText(){
  return lines.join('\n');
 }
 async function openEveningRoutine(){
- if(S.googleCalendar&&S.googleCalendar.connected)await gcalRefresh(true);
+ if(S.googleCalendar&&S.googleCalendar.connected)gcalRefresh(true,false).catch(()=>{});
  const T=today(),tomorrow=addD(1),r=dailyReport(T),classes=routineCalendarEvents(tomorrow),after=afterHoursTasksFor(tomorrow),todayPlan=executionOrdered(dashboardWorkEntries(S.tasks.filter(t=>!isD(t)))).filter(x=>x.planDate===T||x.due===T),todayAfter=afterHoursTasksFor(T);
  const classRows=classes.map(e=>'<label class="routine-check"><input type="checkbox" '+((r.eveningDone||[]).includes('class:'+e.key)?'checked':'')+' onchange="toggleRoutineCheck(\'evening\',\'class:'+e.key+'\',this.checked)"><span>'+esc(e.name)+'</span><small>'+esc((e.time||'시간 미정')+' · '+e.origin)+'</small></label>').join('');
  const todayRows=todayPlan.map(x=>'<label class="routine-check"><input type="checkbox" '+((r.eveningDone||[]).includes(routineWorkKey(x))?'checked':'')+' onchange="toggleRoutineCheck(\'evening\',\''+routineWorkKey(x)+'\',this.checked)"><b class="exec-rank">'+weeklyExecutionRank(x)+'</b><span>'+esc(routineWorkLine(x))+'</span></label>').join('');
