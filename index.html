@@ -511,7 +511,7 @@ td{height:34px!important}
 .capacity-card.capacity-compact .capacity-copy,.capacity-card.capacity-compact .capacity-meter{display:flex;flex:1;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
 .capacity-card.capacity-compact .capacity-copy b,.capacity-card.capacity-compact .capacity-meter strong{font-size:17px;line-height:1.25}
 .capacity-card.capacity-compact .capacity-copy span,.capacity-card.capacity-compact .capacity-meter span{font-size:11px;color:var(--mu);font-weight:500}
-.capacity-card.capacity-compact .capacity-meter{padding-left:16px;border-left:1px solid var(--line)}
+.capacity-card.capacity-compact .capacity-meter{padding-left:0}.capacity-card.capacity-compact .capacity-slash{font-style:normal;color:var(--mu);font-size:15px;padding:0 16px}
 @media(max-width:760px){.capacity-card.capacity-compact{max-width:none}}
 \n</style></head><body>
 <div class="integrated-shell">
@@ -765,9 +765,9 @@ let l=sortL(active,c),archiveOpen=!!c.parkedOpen,cols=S.cols.filter(x=>x.id!=='f
 if(c.group==='company')groupList.forEach((g,i)=>{const k='c:company:'+i,empty=!g.list.length&&!(g.subs||[]).length;if(empty&&!emptyGroupDefaultsSet.has(k))col.add(k);if(empty)emptyGroupDefaultsSet.add(k);else emptyGroupDefaultsSet.delete(k)});
 GL={};GV=[];
 let todayPlan=active.filter(t=>!isPinnedTask(t)&&(t.cx||{}).planDate===today()),minutes=todayPlan.reduce((n,t)=>n+Math.max(0,Number((t.cx||{}).estimateMin)||0),0),unestimatedToday=active.filter(t=>!isPinnedTask(t)&&!Number((t.cx||{}).estimateMin)&&(((t.cx||{}).planDate===today())||t.due===today())),now=new Date(),dayCalendarMinutes=fixedMinutesFor(today(),9*60),availableMinutes=Math.max(0,DAY_CAPACITY-dayCalendarMinutes),overdue=active.filter(t=>!isPinnedTask(t)&&t.due&&diff(t.due)<0);
-let top=afterHours?'':`<div class="table-command">
+let top=afterHours?`<div class="table-command"><div class="table-command-head"><h2>개인 일정</h2></div></div>`:`<div class="table-command">
 <div class="table-command-head"><div class="board-breadcrumb"><span>업무 관리 보드</span><i>/</i><h2>전체 업무 관리</h2></div></div>
-<div class="capacity-card capacity-compact"><div class="capacity-copy"><b>${formatHM(minutes)}</b><span>오늘 배치한 업무</span></div><div class="capacity-meter capacity-available"><strong>${formatHM(availableMinutes)}</strong><span>오늘 가용시간</span></div></div>
+<div class="capacity-card capacity-compact"><div class="capacity-copy"><b>${formatHM(minutes)}</b><span>오늘 배치한 업무</span></div><i class="capacity-slash">/</i><div class="capacity-meter capacity-available"><strong>${formatHM(availableMinutes)}</strong><span>오늘 가용시간</span></div></div>
 <div class="table-quickstats"><button type="button" class="quickstat-action" onclick="openUnestimatedList()"><b>${unestimatedToday.length}</b><span>예상 시간 미입력</span></button><div><b>${overdue.length}</b><span>마감 지연</span></div></div>
 </div>`;
 let main=groupList.map((g,i)=>grpHtml(g,i,cols,c.group)).join('')+(c.group==='company'?'<button class="lk" onclick="addGroup()">＋ 새 그룹 추가</button>':'');
