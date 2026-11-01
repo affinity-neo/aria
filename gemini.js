@@ -97,7 +97,7 @@
   }
   function renderAriaChat(){
     const log=$id("ariaChatLog");if(!log)return;const history=readChat();let html="";
-    if(!history.length)html='<div style="display:flex;gap:8px;margin-bottom:14px;align-items:flex-end">'+ariaMascot(28)+'<div style="max-width:86%;background:var(--sf);border:1px solid var(--line);border-radius:16px 16px 16px 5px;padding:11px 14px;line-height:1.6;font-size:13px">안녕하세요! 저는 Aria예요. 업무 이동이나 일정 변경도 평소처럼 말해 주세요. 실제 보드에 반영한 뒤 결과를 알려드릴게요.</div></div>';
+    if(!history.length)html='<div class="aria-empty-state"><div class="aria-empty-mascot">'+ariaMascot(54)+'</div><h1>안녕하세요, Aria예요.</h1><p>오늘은 무엇을 도와드릴까요?</p></div>';
     history.forEach(m=>{const mine=m.role==="user";html+='<div style="display:flex;justify-content:'+(mine?"flex-end":"flex-start")+';gap:8px;margin:10px 0;align-items:flex-end">'+(mine?"":ariaMascot(28))+'<div style="max-width:86%;white-space:pre-wrap;overflow-wrap:anywhere;background:'+(mine?"#2F5DE8":"var(--sf)")+';color:'+(mine?"#fff":"var(--tx)")+';border:'+(mine?"0":"1px solid var(--line)")+';border-radius:'+(mine?"16px 16px 5px 16px":"16px 16px 16px 5px")+';padding:11px 14px;line-height:1.65;font-size:13px">'+esc(mine?m.content:cleanAriaReply(m.content))+'</div></div>'});
     log.innerHTML=html;log.scrollTop=log.scrollHeight;renderAriaChatList(($id("ariaChatSearch")||{}).value||"");
   }
