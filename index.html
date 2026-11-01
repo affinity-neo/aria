@@ -96,7 +96,7 @@ th{position:relative}.rz{position:absolute;top:0;right:0;width:7px;height:100%;c
 .gb table{min-width:100%}
 .gb th{height:42px;background:var(--inp);font-size:11px;font-weight:700;color:var(--mu);position:sticky;top:0;z-index:3}
 .gb th:nth-child(1),.gb td:nth-child(1){position:sticky;left:0;z-index:4;background:var(--sf)}
-.gb th:nth-child(2),.gb td:nth-child(2){position:sticky;left:36px;z-index:4;background:var(--sf);box-shadow:5px 0 8px -8px #0008}
+.gb th:nth-child(2),.gb td:nth-child(2){position:sticky;left:36px;z-index:4;background:var(--sf);box-shadow:inset -1px 0 var(--line),5px 0 8px -8px #0008}
 .gb th:nth-child(1),.gb th:nth-child(2){background:var(--inp);z-index:5}
 .gb td{height:48px}
 .gb tr.rw:nth-child(even)>td{background:color-mix(in srgb,var(--sf) 94%,var(--line))}
@@ -452,10 +452,10 @@ td{height:34px!important}
 .event-dot{width:5px;height:5px;flex:none;border-radius:50%;background:currentColor}.apple-cal-empty{font-size:9px;color:var(--mu);opacity:.6;padding:2px 3px}
 .apple-cal-scroll{max-height:min(72vh,840px);overflow:auto;overscroll-behavior:contain}
 .apple-cal-timegrid{display:grid;grid-template-columns:54px minmax(700px,1fr);min-width:754px}
-.apple-cal-time-axis{position:relative;border-right:1px solid var(--line);height:868px;background:var(--sf)}
-.apple-cal-hour-label{height:62px;display:flex;justify-content:center;align-items:flex-start;transform:translateY(-7px);font-size:10px;color:var(--mu);font-variant-numeric:tabular-nums}
-.apple-cal-day-columns{display:grid;grid-template-columns:repeat(7,minmax(100px,1fr));height:868px}
-.apple-cal-day-column{position:relative;height:868px;min-width:0;border-right:1px solid var(--line);background:repeating-linear-gradient(to bottom,transparent 0,transparent 61px,var(--line) 61px,var(--line) 62px);touch-action:pan-y;cursor:crosshair}
+.apple-cal-time-axis{position:relative;border-right:1px solid var(--line);height:1152px;background:var(--sf)}
+.apple-cal-hour-label{height:48px;display:flex;justify-content:center;align-items:flex-start;transform:translateY(-6px);font-size:10px;color:var(--mu);font-variant-numeric:tabular-nums}
+.apple-cal-day-columns{display:grid;grid-template-columns:repeat(7,minmax(100px,1fr));height:1152px}
+.apple-cal-day-column{position:relative;height:1152px;min-width:0;border-right:1px solid var(--line);background:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,var(--line) 47px,var(--line) 48px);touch-action:pan-y;cursor:crosshair}
 .apple-cal-day-column:nth-child(odd){background-color:color-mix(in srgb,var(--sf2) 22%,var(--sf))}
 .apple-cal-hour-lines{position:absolute;inset:0;pointer-events:none}
 .apple-cal-event{position:absolute;left:3px;right:3px;z-index:2;width:calc(100% - 6px);display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:4px 6px;border:0;border-left:3px solid #3478f6;border-radius:5px;background:#e8f2ff;color:#244f7e;text-align:left;overflow:hidden;white-space:normal;cursor:pointer}
@@ -468,6 +468,34 @@ td{height:34px!important}
 
 .apple-cal-dayhead.is-sun small{color:#e35d5b}.apple-cal-dayhead.is-sat small{color:#3478f6}
 .apple-cal-day-column.is-today{background-color:color-mix(in srgb,#3478f6 5%,var(--sf))}
+
+.apple-cal-day-column:before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(to bottom,color-mix(in srgb,var(--mu) 9%,transparent) 0 432px,transparent 432px 1056px,color-mix(in srgb,var(--mu) 9%,transparent) 1056px 1152px)}
+.apple-cal-day-column.is-today:before{background:linear-gradient(to bottom,color-mix(in srgb,var(--blue) 9%,transparent) 0 432px,transparent 432px 1056px,color-mix(in srgb,var(--blue) 9%,transparent) 1056px 1152px)}
+.apple-cal-hour-lines{z-index:1}
+.sbx th:nth-child(2),.sbx td:nth-child(2){box-shadow:inset -1px 0 var(--line)}
+.sbx table{table-layout:fixed;border-collapse:separate;border-spacing:0}
+.routine-secretary{width:min(760px,100%);display:grid;gap:14px}
+.routine-secretary-head{display:flex;align-items:flex-start;gap:12px}
+.routine-secretary-head h2{margin:0 0 5px;font-size:22px;letter-spacing:-.5px}
+.routine-secretary-head p{margin:0;color:var(--mu);font-size:12px;line-height:1.6}
+.routine-greeting-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.routine-greeting-stats>div{padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--sf)}
+.routine-greeting-stats small{display:block;color:var(--mu);font-size:10px;margin-bottom:5px}
+.routine-greeting-stats b{font-size:20px;font-variant-numeric:tabular-nums}
+.routine-secretary-section{border:1px solid var(--line);border-radius:12px;background:var(--sf);padding:13px}
+.routine-secretary-section h3{font-size:13px;margin:0 0 10px}
+.routine-agenda-row{display:grid;grid-template-columns:68px minmax(0,1fr);gap:10px;padding:9px 0;border-top:1px solid var(--line);align-items:start}
+.routine-agenda-time{font-size:11px;font-variant-numeric:tabular-nums;color:var(--mu);white-space:nowrap}
+.routine-agenda-title{font-size:12px;font-weight:600;overflow-wrap:anywhere}
+.routine-agenda-origin{display:block;font-size:10px;color:var(--mu);margin-top:3px}
+.routine-secretary-task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;padding:9px 0;border-top:1px solid var(--line)}
+.routine-secretary-task input{width:16px;height:16px;accent-color:var(--blue)}
+.routine-secretary-task-main{font-size:12px;min-width:0;overflow-wrap:anywhere}
+.routine-secretary-task-main small{display:block;font-size:10px;color:var(--mu);margin-top:3px}
+.routine-secretary-task .due-mark{font-size:10px;color:var(--red);white-space:nowrap}
+.routine-secretary-note{display:grid;gap:6px;font-size:11px;color:var(--mu)}
+.routine-secretary-note textarea{resize:vertical}
+@media(max-width:560px){.routine-greeting-stats{gap:5px}.routine-greeting-stats>div{padding:9px}.routine-greeting-stats b{font-size:17px}.routine-agenda-row{grid-template-columns:58px minmax(0,1fr)}}
 </style></head><body>
 <div class="integrated-shell">
 <aside class="aria-side" aria-label="Aria 메뉴">
@@ -482,7 +510,7 @@ td{height:34px!important}
 
 <button class="aria-nav" data-kind="schedule" onclick="ariaGo('schedule')"><span class="aria-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>시간 설정</span></button>
 <div class="aria-nav-separator" aria-hidden="true"></div>
-<button class="aria-nav" data-kind="ai" onclick="ariaGo('ai')"><span class="aria-ico"><svg viewBox="0 0 64 64" style="width:22px;height:22px"><path d="M32 5 C44 5 54 16 55 29 C56 41 46 51 34 57 C32.5 57.8 31 57.8 29.5 57 C17 51 8 41 9 29 C10 16 20 5 32 5 Z" fill="#3478f6" stroke="none"/><ellipse cx="24" cy="36" rx="3" ry="4.5" fill="#fff" stroke="none"/><ellipse cx="40" cy="36" rx="3" ry="4.5" fill="#fff" stroke="none"/></svg></span><span>AI 비서</span></button>
+<button class="aria-nav" data-kind="ai" onclick="ariaGo('ai')"><span class="aria-ico"><svg viewBox="0 0 162 158" style="width:22px;height:22px;display:block"><defs><linearGradient id="ariaNavMascotBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4383f7"/><stop offset="100%" stop-color="#1e55d8"/></linearGradient></defs><path d="M20 85 C22 67 37 40 50 25 C59 14 70 17 82 17 C99 17 112 27 122 45 C134 66 143 83 144 98 C146 114 135 127 118 134 C92 144 61 141 40 130 C23 121 15 104 20 85Z" fill="url(#ariaNavMascotBlue)"/><ellipse cx="66.5" cy="85.5" rx="6.1" ry="10" fill="#fff"/><ellipse cx="97" cy="85.5" rx="6.1" ry="10" fill="#fff"/></svg></span><span>AI 비서</span></button>
 <button class="aria-nav" data-kind="archive" onclick="ariaGo('archive')"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M3 5h18v4H3zM5 9v11h14V9M9 13h6"/></svg></span><span>보관 업무</span></button>
 <div class="aria-side-bottom"><button class="aria-nav" id="sideThemeBtn" onclick="theme()"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z"/></svg></span><span>화면 테마</span></button><button class="aria-nav" id="sideSyncBtn" onclick="syncUI()"><span class="aria-ico"><svg viewBox="0 0 24 24"><path d="M7 7a7 7 0 0 1 11.8 2M17 17A7 7 0 0 1 5.2 15M18.8 5.5v4h-4M5.2 18.5v-4h4"/></svg></span><span>기기 동기화</span></button><button id="ariaCollapseBtn" class="aria-collapse" onclick="toggleSidebar()" title="사이드바 접기" aria-label="사이드바 접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button></div>
 </aside>
@@ -656,7 +684,7 @@ if(ty==='due')return `<td>${dI(t.due,`upd(${id},'due',this.value)`,'date_'+id+'_
 let v=cv(t,c.id);if(c.id==='workType')return `<td class="worktype-cell"><button class="worktype-trigger ${v?'chosen':''}" aria-label="처리 방식 선택" onclick="openP(event,'worktype','${id}')">${v?esc(v):''}</button></td>`;if(c.id==='planDate')return `<td class="date-cell">${dI(v,`setCx(${id},'${c.id}',this.value)`,'date_'+id+'_plan')}<button class="repeat-open ${t.cx&&t.cx.repeatRule?'is-repeat':''}" title="반복 실행 설정" aria-label="반복 실행 설정" onclick="openRepeatSettings(${id})">↻</button></td>`;if(ty==='date')return `<td>${dI(v,`setCx(${id},'${c.id}',this.value)`,'date_'+id+'_'+c.id)}</td>`;if(ty==='focus')return `<td><select class="focus-select" aria-label="업무 분류" onchange="setCx(${id},'focusType',this.value)"><option value="" ${!v?'selected':''}></option>${['핵심','운영','수업 과제','바이브 코딩','홀딩','비수익','개인'].map(x=>`<option value="${x}" ${v===x?'selected':''}>${x}</option>`).join('')}</select></td>`;return `<td><input class="ce ${ty==='num'?'num-input':''}" type="${ty==='num'?'number':'text'}" min="0" step="${ty==='num'?'5':'1'}" ${c.id==='workType'?'placeholder="긴 작업 / 빠른 작업 / 위임 / 대기"':''}  value="${esc(v)}" onchange="setCx(${id},'${c.id}',this.value)"></td>`}
 function taskAssignees(t){if(t.person)return [t.person];return [...new Set((t.subs||[]).map(x=>x.person).filter(Boolean))]}
 function subRow(t,s){let k=`s:${t.id}:${s.id}`,x=lc('status',s.status);return `<tr class="rw" data-sub="${t.id}:${s.id}" ondragover="rov(event,'s',${t.id})" ondragleave="rlv(event)" ondrop="rdrop(event,'s',${t.id},${s.id})"><td class="ck"><input type="checkbox" ${selected.has(k)?'checked':''} onchange="tsel('${k}',this.checked)"></td><td><div class="nm" draggable="true" ondragstart="dragS(event,'s',${t.id},${s.id})"><span class="tn" style="margin-left:6px" onclick="editName(this,${t.id},${s.id})">${esc(s.task)}</span></div></td><td class="lc" onclick="openP(event,'lab','status','${t.id}:${s.id}')"><div class="pill" style="background:${x};color:${tc(x)}">${esc(s.status)}</div></td><td class="sub-person-cell" onclick="openP(event,'lab','person','${t.id}:${s.id}')">${s.person||t.person?esc(s.person||t.person):''}</td><td><input type="date" class="dt" value="${s.planDate||''}" onchange="upd(${t.id},'planDate',this.value,${s.id})"></td><td>${dI(s.due,`upd(${t.id},'due',this.value,${s.id})`)}</td><td><input class="ce" value="${esc(s.memo)}" onchange="upd(${t.id},'memo',this.value,${s.id})"></td>${S.subCols.map(c=>subCell(t,s,c)).join('')}<td class="ck"><button class="x" title="삭제" onclick="delSub(${t.id},${s.id})">×</button></td></tr>`}
-function subBox(t,gcol){let sc=S.subCols,W=S.subW,tw=36+W.name+W.status+(W.person||130)+(W.planDate||135)+W.due+W.memo+sc.reduce((a,c)=>a+c.w,0)+40,rz=k=>`<span class="rz" onpointerdown="rzStart(event,'s','${k}')"></span>`;return `<div class="sbx" style="border-left-color:${gcol||gc(t.company)}"><table data-t="s" style="width:${tw}px"><colgroup><col style="width:36px"><col data-k="s:name" style="width:${W.name}px"><col data-k="s:status" style="width:${W.status}px"><col data-k="s:person" style="width:${W.person||130}px"><col data-k="s:planDate" style="width:${W.planDate||135}px"><col data-k="s:due" style="width:${W.due}px><col data-k="s:memo" style="width:${W.memo}px">${sc.map(c=>`<col data-k="s:${c.id}" style="width:${c.w}px">`).join('')}<col style="width:40px"></colgroup><thead><tr><th></th><th class="lft">하위 아이템${rz('name')}</th><th>상태${rz('status')}</th><th>담당자${rz('person')}</th><th>예정일${rz('planDate')}</th><th>마감일${rz('due')}</th><th>메모${rz('memo')}</th>${sc.map(c=>`<th class="hc" data-col-id="${c.id}">${esc(c.name)}<span class="cm" onclick="openP(event,'scm','${c.id}')">▾</span>${rz(c.id)}</th>`).join('')}<th><button class="x" title="열 추가" onclick="openP(event,'sadd')">＋</button></th></tr></thead><tbody>${t.subs.map(s=>subRow(t,s)).join('')}<tr class="addr"><td></td><td colspan="${sc.length+7}"><button class="lk" onclick="addSub(${t.id})">＋ 하위 아이템 추가</button></td></tr></tbody></table></div>`}
+function subBox(t,gcol){let sc=S.subCols,W=S.subW,tw=36+W.name+W.status+(W.person||130)+(W.planDate||135)+W.due+W.memo+sc.reduce((a,c)=>a+c.w,0)+40,rz=k=>`<span class="rz" onpointerdown="rzStart(event,'s','${k}')"></span>`;return `<div class="sbx" style="border-left-color:${gcol||gc(t.company)}"><table data-t="s" style="width:${tw}px"><colgroup><col style="width:36px"><col data-k="s:name" style="width:${W.name}px"><col data-k="s:status" style="width:${W.status}px"><col data-k="s:person" style="width:${W.person||130}px"><col data-k="s:planDate" style="width:${W.planDate||135}px"><col data-k="s:due" style="width:${W.due}px"><col data-k="s:memo" style="width:${W.memo}px">${sc.map(c=>`<col data-k="s:${c.id}" style="width:${c.w}px">`).join('')}<col style="width:40px"></colgroup><thead><tr><th></th><th class="lft">하위 아이템${rz('name')}</th><th>상태${rz('status')}</th><th>담당자${rz('person')}</th><th>예정일${rz('planDate')}</th><th>마감일${rz('due')}</th><th>메모${rz('memo')}</th>${sc.map(c=>`<th class="hc" data-col-id="${c.id}">${esc(c.name)}<span class="cm" onclick="openP(event,'scm','${c.id}')">▾</span>${rz(c.id)}</th>`).join('')}<th><button class="x" title="열 추가" onclick="openP(event,'sadd')">＋</button></th></tr></thead><tbody>${t.subs.map(s=>subRow(t,s)).join('')}<tr class="addr"><td></td><td colspan="${sc.length+7}"><button class="lk" onclick="addSub(${t.id})">＋ 하위 아이템 추가</button></td></tr></tbody></table></div>`}
 function subCell(t,s,c){let v=(s.cx||{})[c.id]||'';return c.type==='date'?`<td>${dI(v,`setSx(${t.id},${s.id},'${c.id}',this.value)`,'subdate_'+t.id+'_'+s.id+'_'+c.id)}</td>`:`<td><input class="ce" type="${c.type==='num'?'number':'text'}" value="${esc(v)}" onchange="setSx(${t.id},${s.id},'${c.id}',this.value)"></td>`}
 function setSx(tid,sid,cid,v){let s=find(tid).subs.find(x=>x.id===sid);(s.cx=s.cx||{})[cid]=v;save();render()}
 function addSCol(type){closeP();ask('새 열 이름',{text:'텍스트',date:'날짜',num:'숫자'}[type],v=>{S.subCols.push({id:'s'+Date.now(),name:v,type,w:type==='num'?110:150});save();render()})}
@@ -779,7 +807,7 @@ const pinned=S.tasks.filter(t=>!isD(t)&&isPinnedWaiting(t));
 const options=['홀딩','비수익','핵심','운영','수업 과제','바이브 코딩','개인'];
 return `<div class="box archive-view"><div class="archive-head"><div><h2>보관 업무</h2><p>지금 진행하지 않는 업무와 새 작업을 기다리는 고정 업무를 따로 모아둬요.</p></div><span class="archive-count">${parked.length+pinned.length}개</span></div><h3 class="archive-subhead">새 작업 대기</h3>${pinned.length?`<div class="archive-list">${pinned.map(t=>`<article class="archive-item"><div class="archive-item-main"><b>${esc(t.task)}</b><small>${t.subs.length}개 하위 아이템 모두 완료 · 새 요청 대기 중</small></div><button class="archive-restore" onclick="openPinnedTask(${t.id},true)">새 하위 아이템 추가</button></article>`).join('')}</div>`:'<div class="empty">새 작업을 기다리는 고정 업무가 없어요.</div>'}<h3 class="archive-subhead">보관 업무</h3>${parked.length?`<div class="archive-list">${parked.map(t=>`<article class="archive-item"><div class="archive-item-main"><b>${esc(t.task)}</b><small>${esc(t.company)} · ${esc(t.person||'담당자 미지정')} · ${esc(t.status)}</small></div><label class="archive-class"><select onchange="setCx(${t.id},'focusType',this.value)">${options.map(x=>`<option value="${x}" ${((t.cx||{}).focusType||'')===x?'selected':''}>${x}</option>`).join('')}</select></label><button class="archive-restore" onclick="setCx(${t.id},'focusType','운영')">업무 관리로 복귀</button></article>`).join('')}</div>`:'<div class="empty">보관 중인 업무가 없어요.</div>'}</div>`;
 }
-const CAL_START_HOUR=8,CAL_END_HOUR=22,CAL_HOUR_PX=62;
+const CAL_START_HOUR=0,CAL_END_HOUR=24,CAL_HOUR_PX=48;
 let calendarDragState=null,calendarSlotDraft=null,calendarPointerReady=false,calendarEditingEventId=null;
 function calendarDateFromKey(key){return new Date(key+"T00:00:00")}
 function calendarTimeText(minute){const h=Math.floor(minute/60),m=minute%60;return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")}
