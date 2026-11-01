@@ -41,7 +41,7 @@
     }));
     return {capturedAt:new Date().toISOString(),groups:(S.groups||[]).map(g=>typeof g==="string"?g:g.name).filter(Boolean),tasks};
   }
-  function ariaMascot(size){return '<svg viewBox="0 0 64 64" width="'+size+'" height="'+size+'" aria-hidden="true" style="display:block;flex:none"><path d="M32 5 C44 5 54 16 55 29 C56 41 46 51 34 57 C32.5 57.8 31 57.8 29.5 57 C17 51 8 41 9 29 C10 16 20 5 32 5 Z" fill="#3478f6"/><ellipse cx="24" cy="36" rx="3" ry="4.5" fill="#fff"/><ellipse cx="40" cy="36" rx="3" ry="4.5" fill="#fff"/></svg>';}
+  function ariaMascot(size){return '<svg viewBox="0 0 162 158" width="'+size+'" height="'+size+'" aria-hidden="true" style="display:block;flex:none"><defs><linearGradient id="ariaMascotBlue'+size+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4383f7"/><stop offset="100%" stop-color="#1e55d8"/></linearGradient></defs><path d="M20 85 C22 67 37 40 50 25 C59 14 70 17 82 17 C99 17 112 27 122 45 C134 66 143 83 144 98 C146 114 135 127 118 134 C92 144 61 141 40 130 C23 121 15 104 20 85Z" fill="url(#ariaMascotBlue'+size+')"/><ellipse cx="66.5" cy="85.5" rx="6.1" ry="10" fill="#fff"/><ellipse cx="97" cy="85.5" rx="6.1" ry="10" fill="#fff"/></svg>';}
   function cleanAriaReply(value){return String(value||'').replace(/^\s*#{1,6}\s*/gm,'').replace(/\*{1,3}([^*\n]+)\*{1,3}/g,'$1').replace(/(^|\n)\s*\*\s+/g,'$1• ').replace(/(^|\n)\s*#+\s*/g,'$1').replace(/\n{3,}/g,'\n\n').trim();}
   function setChatStyle(){
     const md=document.querySelector(".md");if(!md)return;
@@ -155,11 +155,66 @@
     }
     return null;
   }
-  window.runAriaExecutionOrder=function(){
+  window.runAriaExecutionOrder=async function(){
     if(typeof window.openGeminiPanel==="function")window.openGeminiPanel();
-    const input=$id("ariaChatInput");if(!input)return;
-    input.value="현재 업무 관리 보드의 실행 순서를 AI가 정리해 줘. 미완료 일반 업무와 하위 업무 중 executionEligible이 true인 항목을 모두 포함해 1번부터 마지막까지 순위를 매겨. 이번 주 실행 예정일, 실제 마감일, 수익·매출·사업 영향, 선행 관계, 대기 여부, 예상 시간을 함께 판단해. 기존 긴급도는 절대 변경하지 말고, 순위만 set_execution_order action의 taskKeys 배열로 반환해. 각 항목의 taskKey를 그대로 사용하고 누락이나 중복 없이 정렬해.";
-    window.sendAriaMessage();
+    const label="AI 실행 순서를 정리해 줘.";
+    pushChat("user",label);
+    const url=localStorage.getItem(URL_KEY)||"";
+    if(!/^https:\/\/[a-z0-9.-]+\.workers\.dev\/api\/gemini$/i.test(url)){
+      pushChat("assistant","먼저 연결 설정에서 Cloudflare Worker 주소를 저장해 주세요.");
+      return;
+    }
+    const items=executionEntries();
+    if(!items.length){pushChat("assistant","실행 순서를 정리할 미완료 업무가 없어요.");return;}
+    if(items.length>180){pushChat("assistant","업무가 180개를 넘어 한 번에 정렬하기 어려워요. 업무 관리에서 범위를 좁힌 뒤 다시 실행해 주세요.");return;}
+    const keyMap=new Map(),seen=new Set();
+    const candidates=items.map((item,index)=>{
+      const key="T"+String(index+1).padStart(3,"0"),realKey=executionKey(item);
+      keyMap.set(key,realKey);
+      const parent=find(item.id),sub=item.subId?(parent.subs||[]).find(x=>Number(x.id)===Number(item.subId)):null,record=sub||parent;
+      return {
+        key,task:item.task,group:item.company||"",parentTask:item.parentTitle||"",
+        status:record.status||parent.status||"",urgency:record.priority||parent.priority||"보통",
+        assignee:item.person||"",plannedDate:item.planDate||"",actualDeadline:item.due||"",
+        estimatedMinutes:Number(sub&&sub.estimateMin||(!sub&&parent.cx&&parent.cx.estimateMin)||0),
+        focusType:parent.cx&&parent.cx.focusType||"",workType:parent.cx&&parent.cx.workType||"",
+        memo:sub&&sub.memo||parent.memo||"",isSubtask:!!item.isSub,
+        currentRank:executionRank(item)
+      };
+    });
+    const selected=new Set((S.googleCalendar&&S.googleCalendar.selectedCalendarIds)||[]);
+    const calendarEvents=selected.size&&typeof gcalReadEvents==="function"?gcalReadEvents().filter(e=>selected.has(e.calendarId)&&e.status!=="cancelled").map(e=>({
+      title:e.summary||"",start:e.start||{},end:e.end||{},transparency:e.transparency||"opaque",
+      allDay:!!(e.start&&e.start.date),calendarId:e.calendarId
+    })):[];
+    const log=$id("ariaChatLog"),pending=document.createElement("div");
+    pending.id="ariaExecutionPending";pending.style.cssText="font-size:12px;color:var(--mu);padding:8px 4px";
+    pending.textContent="업무와 Google Calendar 일정을 함께 확인하고 실행 순서를 정리하고 있어요…";
+    if(log){log.appendChild(pending);log.scrollTop=log.scrollHeight}
+    try{
+      const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+        mode:"execution_order",today:typeof today==="function"?today():"",candidates,calendarEvents
+      })});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(data.error||"AI 실행 순서를 가져오지 못했어요.");
+      const requested=Array.isArray(data.taskKeys)?data.taskKeys.map(String):[];
+      const expected=new Set(keyMap.keys());
+      if(requested.length!==candidates.length||new Set(requested).size!==requested.length||requested.some(k=>!expected.has(k))){
+        throw new Error("AI가 모든 업무를 중복 없이 정렬하지 못했어요. 기존 순서는 변경하지 않았습니다. 다시 실행해 주세요.");
+      }
+      const realOrder=requested.map(k=>keyMap.get(k));
+      if(realOrder.some(k=>!k)||new Set(realOrder).size!==items.length)throw new Error("업무 연결을 확인하지 못해 기존 실행 순서를 유지했어요.");
+      S.executionOrder=realOrder;
+      if(typeof save==="function")save();
+      if(typeof syncTouch==="function")syncTouch();
+      if(typeof render==="function")render();
+      const message="AI가 "+realOrder.length+"개 업무의 실행 순서를 다시 정리했어요. 이번 주 계획은 1번부터 시작하고, 대시보드와 아침·저녁 브리핑에 같은 순서로 반영했어요. 기존 긴급도는 변경하지 않았습니다.";
+      if(pending.parentNode)pending.remove();
+      pushChat("assistant",message);
+    }catch(error){
+      if(pending.parentNode)pending.remove();
+      pushChat("assistant",error&&error.message?error.message:"AI 실행 순서를 정리하지 못했어요. 기존 순서는 유지했어요.");
+    }
   };
   window.sendAriaMessage=async function(){
     const input=$id("ariaChatInput");if(!input)return;
