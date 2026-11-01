@@ -1159,15 +1159,15 @@ load();setSidebarCollapsed(localStorage.getItem('affinityneo_sidebar_collapsed')
 function ariaMobileSetActive(kind){document.querySelectorAll('#ariaMobileNav button').forEach(b=>b.classList.toggle('active',b.dataset.mobile===kind));}
 function ariaMobileSettingsRefresh(){const e=document.getElementById('ariaMobileThemeLabel');if(e)e.textContent=document.documentElement.dataset.theme==='dark'?'현재 다크 모드':'현재 라이트 모드';}
 function ariaMobileGo(kind){
- if(innerWidth>760)return;
  const ws=document.querySelector('.aria-workspace'),settings=document.getElementById('ariaMobileSettings');
- if(kind==='settings'){ws.classList.add('mobile-settings-mode');settings.classList.add('open');ariaMobileSetActive('settings');ariaMobileSettingsRefresh();return;}
+ if(kind==='settings'){closeM();ws.classList.add('mobile-settings-mode');settings.classList.add('open');ariaMobileSetActive('settings');ariaMobileSettingsRefresh();return;}
  ws.classList.remove('mobile-settings-mode');settings.classList.remove('open');ariaMobileSetActive(kind);
  if(kind==='ai'){ariaNewChat();openGeminiPanel();return;}
- ariaGo(kind);
+ closeM(); ariaGo(kind);
 }
 function ariaMobileSettingGo(kind){const ws=document.querySelector('.aria-workspace');ws.classList.remove('mobile-settings-mode');document.getElementById('ariaMobileSettings').classList.remove('open');ariaMobileSetActive(kind==='schedule'?'settings':'settings');ariaGo(kind);}
 function ariaGo(kind){
+ if(kind!=='ai'&&kind!=='settings')closeM();
  if(kind==='ai'){document.querySelectorAll('.aria-nav').forEach(b=>b.classList.remove('active'));const hit=document.querySelector('.aria-nav[data-kind="ai"]');if(hit)hit.classList.add('active');openGeminiPanel();return}
  const v=S.views.find(x=>x.kind===kind)||(kind==='today'?S.views.find(x=>x.kind==='today'):null);
  if(v)setView(v.id);else toast('해당 화면을 찾지 못했어요.');
