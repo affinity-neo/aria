@@ -448,7 +448,7 @@ td{height:34px!important}
 .apple-cal-axis-label{display:flex;align-items:flex-start;justify-content:center;padding-top:7px;font-size:9px;color:var(--mu);border-right:1px solid var(--line)}
 .apple-cal-allday-cell{min-width:0;padding:3px 4px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:3px}
 .apple-cal-allday-item{display:flex;align-items:center;gap:5px;max-width:100%;padding:3px 5px;border-radius:5px;background:#eaf1fb;color:#284d7a;border:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px;line-height:1.3}
-.apple-cal-allday-item.is-task{background:#e8f3ff;color:#1c5b9b}.apple-cal-allday-item.is-google{background:#eaf4ec;color:#326348}.apple-cal-allday-item.is-fixed{background:#f2f2f4;color:#626977}
+.apple-cal-allday-item.is-task,.apple-cal-allday-item.is-task-plan{background:#e8f3ff;color:#1c5b9b}.apple-cal-allday-item.is-task-due{background:#ffebeb;color:#bd3038}.apple-cal-allday-item.is-google{background:#eaf4ec;color:#326348}.apple-cal-allday-item.is-fixed{background:#f2f2f4;color:#626977}
 .event-dot{width:5px;height:5px;flex:none;border-radius:50%;background:currentColor}.apple-cal-empty{font-size:9px;color:var(--mu);opacity:.6;padding:2px 3px}
 .apple-cal-scroll{max-height:min(72vh,840px);overflow:auto;overscroll-behavior:contain}
 .apple-cal-timegrid{display:grid;grid-template-columns:54px minmax(700px,1fr);min-width:754px}
@@ -948,18 +948,29 @@ function calendarBuildData(dateKeys){
  });
  const tasks=dashboardWorkEntries(S.tasks.filter(t=>!isD(t)));
  tasks.forEach(item=>{
-  if(calendarTaskLink(item))return;
-  [...new Set([item.planDate,item.due].filter(Boolean))].forEach(day=>{if(allDay[day]&&!allDay[day].some(x=>x.kind==="task"&&x.id===item.id&&Number(x.subId||0)===Number(item.subId||0)))allDay[day].push({kind:"task",id:item.id,subId:item.subId||0,title:item.task,linked:item,allDay:true})});
+  if(calendarTaskLink(item)||!String(item.task||"").trim())return;
+  const key=String(item.id)+":"+String(item.subId||0);
+  const addTaskDate=(day,kind)=>{
+   if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(day||""))||!allDay[day])return;
+   if(!allDay[day].some(x=>x.kind===kind&&String(x.id)+":"+String(x.subId||0)===key)){
+    allDay[day].push({kind,id:item.id,subId:item.subId||0,title:item.task,linked:item,allDay:true});
+   }
+  };
+  addTaskDate(item.planDate,"task-plan");
+  addTaskDate(item.due,"task-due");
  });
  Object.values(timed).forEach(list=>list.sort((x,y)=>x.start-y.start||x.end-y.end));
  Object.values(allDay).forEach(list=>list.sort((x,y)=>String(x.title).localeCompare(String(y.title),"ko")));
  return {allDay,timed};
 }
 function calendarEventHtml(item){
- if(item.kind==="task")return '<button draggable="true" ondragstart="calendarTaskDragStart(event,\''+item.id+':'+(item.subId||0)+'\')" class="apple-cal-allday-item is-task" onclick="calendarOpen('+item.id+','+(item.subId||0)+')" title="'+esc(item.title)+'"><span class="event-dot"></span>'+esc(item.title)+'</button>';
+ if(item.kind==="task-plan"||item.kind==="task-due"){
+  const cls=item.kind==="task-due"?"is-task-due":"is-task-plan";
+  return '<button draggable="true" ondragstart="calendarTaskDragStart(event,\\''+item.id+':'+(item.subId||0)+'\\')" class="apple-cal-allday-item '+cls+'" onclick="calendarOpen('+item.id+','+(item.subId||0)+')" title="'+esc(item.title)+(item.kind==="task-due"?" · 마감일":" · 계획일")+'"><span class="event-dot"></span>'+esc(item.title)+'</button>';
+ }
  if(item.kind==="fixed")return '<span class="apple-cal-allday-item is-fixed"><span class="event-dot"></span>'+esc(item.title)+'</span>';
  const action=item.linked?'calendarOpen('+item.linked.id+','+(item.linked.subId||0)+')':'openCalendarEvent('+JSON.stringify(item.id)+')';
- return '<button class="apple-cal-allday-item '+(item.linked?'is-task':'is-google')+'" onclick="'+action+'" title="'+esc(item.title)+'"><span class="event-dot"></span>'+esc(item.title)+'</button>';
+ return '<button class="apple-cal-allday-item '+(item.linked?'is-task-plan':'is-google')+'" onclick="'+action+'" title="'+esc(item.title)+'"><span class="event-dot"></span>'+esc(item.title)+'</button>';
 }
 function calendarTimedEventHtml(item){
  const top=Math.max(0,(item.start-CAL_START_HOUR*60)/60*CAL_HOUR_PX),height=Math.max(24,(item.end-item.start)/60*CAL_HOUR_PX),time=calendarTimeText(item.start)+"–"+calendarTimeText(item.end),action=item.kind==="fixed"?"":item.linked?"calendarOpen("+item.linked.id+","+(item.linked.subId||0)+")":"openCalendarEvent("+JSON.stringify(item.id)+")";
@@ -1256,24 +1267,28 @@ function ariaMobileGo(kind){
 }
 function ariaMobileSettingGo(kind){const ws=document.querySelector('.aria-workspace');ws.classList.remove('settings-mode','mobile-settings-mode');document.getElementById('ariaSettingsPanel').classList.remove('open');ariaMobileSetActive(kind==='schedule'?'settings':'settings');ariaGo(kind);}
 function ariaGo(kind){
+ localStorage.setItem('affinityneo_screen_v1',String(kind));
  if(kind==='ai'){closeM();const ws=document.querySelector('.aria-workspace'),panel=document.getElementById('ariaSettingsPanel');ws.classList.remove('settings-mode');panel.classList.remove('open');document.querySelectorAll('.aria-nav').forEach(b=>b.classList.toggle('active',b.dataset.kind==='ai'));$('tb').style.display='none';$('content').innerHTML=vAI();openGeminiPanel();return;}
  if(kind==='settings'){closeM();const ws=document.querySelector('.aria-workspace'),p=document.getElementById('ariaSettingsPanel');ws.classList.add('settings-mode');p.classList.add('open');ariaSettingsPanelRefresh();document.querySelectorAll('.aria-nav').forEach(b=>b.classList.remove('active'));return;}
  if(kind!=='ai')closeM();
  const ws=document.querySelector('.aria-workspace'),panel=document.getElementById('ariaSettingsPanel');if(kind!=='settings'){ws.classList.remove('settings-mode');panel.classList.remove('open');}
- if(kind==='ai'){document.querySelectorAll('.aria-nav').forEach(b=>b.classList.remove('active'));const hit=document.querySelector('.aria-nav[data-kind="ai"]');if(hit)hit.classList.add('active');openGeminiPanel();return}
  const v=S.views.find(x=>x.kind===kind)||(kind==='today'?S.views.find(x=>x.kind==='today'):null);
  if(v)setView(v.id);else toast('해당 화면을 찾지 못했어요.');
 }
 </script>
 <script>
 (function(){
- if(window.innerWidth<=760){
-  ariaMobileSetActive('ai');
-  ariaNewChat();
+ const last=localStorage.getItem('affinityneo_screen_v1')||'today';
+ if(last==='ai'){
+  if(window.innerWidth<=760)ariaMobileSetActive('ai');
   ariaGo('ai');
+ }else if(last==='settings'){
+  ariaGo('settings');
  }else{
-  ariaNewChatHome();
-  ariaGo('ai');
+  const savedId=localStorage.getItem('affinityneo_active_view_v1');
+  const savedView=S.views.find(v=>String(v.id)===String(savedId))||S.views.find(v=>v.kind===last)||S.views.find(v=>v.kind==='today');
+  if(savedView){if(window.innerWidth<=760)ariaMobileSetActive(savedView.kind);setView(savedView.id);}
+  else ariaGo('today');
  }
 })();
 </script></div></div></body></html>
