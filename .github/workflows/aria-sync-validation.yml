@@ -1,0 +1,36 @@
+name: ARIA sync validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "mac-sync/**"
+      - ".github/workflows/aria-sync-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile macOS Reminders helper
+        run: swiftc -parse-as-library -o /tmp/aria-reminders-sync mac-sync/AriaRemindersSync.swift
+      - name: Check inline JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path("index.html").read_text()
+          scripts = re.findall(r"<script>(.*?)</script>", html, re.S | re.I)
+          if not scripts:
+              raise SystemExit("No inline scripts found")
+          for i, script in enumerate(scripts):
+              Path(f"/tmp/aria-inline-{i}.js").write_text(script)
+          print(f"Extracted {len(scripts)} inline scripts")
+          PY
+          for file in /tmp/aria-inline-*.js; do
+            echo "Checking $file"
+            node --check "$file"
+          done
