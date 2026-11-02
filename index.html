@@ -951,7 +951,7 @@ function calendarBuildData(dateKeys){
   if(calendarTaskLink(item)||!String(item.task||"").trim())return;
   const key=String(item.id)+":"+String(item.subId||0);
   const addTaskDate=(day,kind)=>{
-   if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(day||""))||!allDay[day])return;
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(String(day||""))||!allDay[day])return;
    if(!allDay[day].some(x=>x.kind===kind&&String(x.id)+":"+String(x.subId||0)===key)){
     allDay[day].push({kind,id:item.id,subId:item.subId||0,title:item.task,linked:item,allDay:true});
    }
@@ -1278,15 +1278,16 @@ function ariaGo(kind){
 </script>
 <script>
 (function(){
- const last=localStorage.getItem('affinityneo_screen_v1')||'today';
+ const savedId=localStorage.getItem('affinityneo_active_view_v1');
+ const legacyView=S.views.find(v=>String(v.id)===String(savedId));
+ const last=localStorage.getItem('affinityneo_screen_v1')||(legacyView?legacyView.kind:'ai');
  if(last==='ai'){
   if(window.innerWidth<=760)ariaMobileSetActive('ai');
   ariaGo('ai');
  }else if(last==='settings'){
   ariaGo('settings');
  }else{
-  const savedId=localStorage.getItem('affinityneo_active_view_v1');
-  const savedView=S.views.find(v=>String(v.id)===String(savedId))||S.views.find(v=>v.kind===last)||S.views.find(v=>v.kind==='today');
+  const savedView=legacyView||S.views.find(v=>v.kind===last)||S.views.find(v=>v.kind==='today');
   if(savedView){if(window.innerWidth<=760)ariaMobileSetActive(savedView.kind);setView(savedView.id);}
   else ariaGo('today');
  }
