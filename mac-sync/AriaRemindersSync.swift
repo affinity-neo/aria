@@ -126,7 +126,7 @@ struct AriaRemindersSync {
                     } else if remoteTime > localTime + 1500 || reminder.title != title || (reminder.notes ?? "") != (item["notes"] as? String ?? "") || reminder.isCompleted != (item["completed"] as? Bool ?? false) {
                         reminder.title = title; reminder.notes = item["notes"] as? String ?? ""
                         reminder.isCompleted = item["completed"] as? Bool ?? false
-                        if let priority = item["priority"] as? Int { reminder.priority = EKReminderPriority(rawValue: priority) ?? .none }
+                        if let priority = item["priority"] as? Int { reminder.priority = priority }
                         try store.save(reminder, commit: true)
                     }
                 } else {
@@ -134,7 +134,7 @@ struct AriaRemindersSync {
                     reminder.calendar = calendar; reminder.title = title
                     reminder.notes = item["notes"] as? String ?? ""
                     reminder.isCompleted = item["completed"] as? Bool ?? false
-                    if let priority = item["priority"] as? Int { reminder.priority = EKReminderPriority(rawValue: priority) ?? .none }
+                    if let priority = item["priority"] as? Int { reminder.priority = priority }
                     try store.save(reminder, commit: true)
                     state.map[remoteID] = reminder.calendarItemIdentifier; changedState = true
                 }
@@ -154,7 +154,7 @@ struct AriaRemindersSync {
     static func payload(_ reminder: EKReminder, list: String, remoteID: String) -> [String: Any] {
         let now = Date().timeIntervalSince1970 * 1000
         return ["id": remoteID, "title": reminder.title ?? "", "notes": reminder.notes ?? "",
-                "list": list, "priority": reminder.priority.rawValue, "completed": reminder.isCompleted,
+                "list": list, "priority": reminder.priority, "completed": reminder.isCompleted,
                 "completedAt": reminder.isCompleted ? now : 0, "updatedAt": max(now, (reminder.lastModifiedDate?.timeIntervalSince1970 ?? 0) * 1000),
                 "createdDate": ISO8601DateFormatter().string(from: reminder.creationDate ?? Date())]
     }
