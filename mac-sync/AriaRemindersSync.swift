@@ -78,6 +78,7 @@ struct AriaRemindersSync {
             let reminders = await fetchReminders(calendar)
             let byIdentifier = Dictionary(uniqueKeysWithValues: reminders.map { ($0.calendarItemIdentifier, $0) })
             var changedState = false
+            var deletedEventIDs = Set<String>()
 
             // Previously linked items missing from the ARIA list are deletions (including items moved to Recently Deleted).
             for (remoteID, eventID) in Array(state.map) where byIdentifier[eventID] == nil {
@@ -87,6 +88,7 @@ struct AriaRemindersSync {
                     tomb["deletedAt"] = now; tomb["updatedAt"] = now
                     await write(tomb, id: remoteID, config: config); remote[remoteID] = tomb
                 }
+                deletedEventIDs.insert(eventID)
                 state.map.removeValue(forKey: remoteID); changedState = true
             }
 
@@ -94,7 +96,8 @@ struct AriaRemindersSync {
             for (remoteID, var item) in remote {
                 if item["deletedAt"] != nil {
                     if let eventID = state.map[remoteID], let reminder = byIdentifier[eventID] {
-                        store.remove(reminder, commit: false); try? store.commit()
+                        try? store.remove(reminder, commit: false); try? store.commit()
+                        deletedEventIDs.insert(eventID)
                     }
                     state.map.removeValue(forKey: remoteID); changedState = true
                     continue
@@ -125,7 +128,7 @@ struct AriaRemindersSync {
 
             // Publish Apple-side additions not yet linked to a remote record.
             let mapped = Set(state.map.values)
-            for reminder in reminders where !mapped.contains(reminder.calendarItemIdentifier) {
+            for reminder in reminders where !mapped.contains(reminder.calendarItemIdentifier) && !deletedEventIDs.contains(reminder.calendarItemIdentifier) {
                 let remoteID = UUID().uuidString
                 await write(payload(reminder, list: config.listName, remoteID: remoteID), id: remoteID, config: config)
                 state.map[remoteID] = reminder.calendarItemIdentifier; changedState = true
