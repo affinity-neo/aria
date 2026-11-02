@@ -1032,7 +1032,7 @@ function dashboardWorkEntries(tasks){
 let out=[];
 tasks.forEach(t=>{
  if(isD(t))return;
- const parentExcluded=isAfterHoursTask(t)||isWaitingTask(t);
+ const parentExcluded=isAfterHoursTask(t);
  if(!parentExcluded&&!isPinnedTask(t)){out.push({id:t.id,task:t.task,parentTitle:'',company:t.company,person:t.person||taskAssignees(t).join(', '),planDate:t.cx&&t.cx.planDate||'',due:t.due||'',priority:t.priority||'보통',estimateMin:Number(t.cx&&t.cx.estimateMin)||0,status:t.status||'',memo:t.memo||'',isSub:false})}
  if(!parentExcluded)(t.subs||[]).forEach(sub=>{if(isD(sub))return;out.push({id:t.id,subId:sub.id,task:sub.task,parentTitle:String(t.task||'').replace(/📌/g,'').trim(),company:t.company,person:sub.person||t.person||'',planDate:sub.planDate||'',due:sub.due||'',priority:sub.priority||t.priority||'보통',estimateMin:Number(sub.estimateMin)||0,status:sub.status||'',memo:sub.memo||t.memo||'',isSub:true})});
 });
