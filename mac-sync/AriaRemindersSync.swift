@@ -11,7 +11,6 @@ struct AriaRemindersSync {
     static let store = EKEventStore()
     static let configDir = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent(".config/aria-reminders", isDirectory: true)
-    static var sentFile: URL { configDir.appendingPathComponent("sent-identifiers.json") }
 
     static func main() async {
         do {
@@ -24,7 +23,8 @@ struct AriaRemindersSync {
             }
 
             print("✅ Apple 미리 알림 접근 권한 확인")
-            print("📥 '(config.listName)' 목록을 감시합니다. 새 항목은 약 10초 안에 ARIA로 전송돼요.")
+            print("📥 '\(config.listName)' 목록을 감시합니다.")
+            print("현재 목록의 미완료 항목만 ARIA에 유지합니다. Apple에서 삭제하거나 완료하면 ARIA에서도 사라집니다.")
             print("종료하려면 Control + C를 누르세요.\n")
 
             while true {
@@ -56,21 +56,9 @@ struct AriaRemindersSync {
         return config
     }
 
-    static func loadSent() -> Set<String> {
-        guard let data = try? Data(contentsOf: sentFile),
-              let values = try? JSONDecoder().decode([String].self, from: data) else { return [] }
-        return Set(values)
-    }
-
-    static func saveSent(_ values: Set<String>) {
-        if let data = try? JSONEncoder().encode(Array(values).sorted()) {
-            try? data.write(to: sentFile, options: .atomic)
-        }
-    }
-
     static func syncOnce(config: Config) async {
         guard let calendar = store.calendars(for: .reminder).first(where: { $0.title == config.listName }) else {
-            print("⚠️ '(config.listName)' 목록을 찾지 못했어요. iCloud 미리 알림 동기화와 목록 이름을 확인하세요.")
+            print("⚠️ '\(config.listName)' 목록을 찾지 못했어요. 목록 이름을 확인하세요.")
             return
         }
 
@@ -81,45 +69,33 @@ struct AriaRemindersSync {
             }
         }
 
-        var sent = loadSent()
-        var added = 0
-
+        var current: [String: [String: Any]] = [:]
         for reminder in reminders where !reminder.isCompleted {
-            guard let identifier = reminder.calendarItemIdentifier as String?,
-                  !sent.contains(identifier),
-                  let title = reminder.title?.trimmingCharacters(in: .whitespacesAndNewlines),
+            let identifier = reminder.calendarItemIdentifier
+            guard let title = reminder.title?.trimmingCharacters(in: .whitespacesAndNewlines),
                   !title.isEmpty else { continue }
 
-            let created = reminder.creationDate ?? Date()
             let formatter = ISO8601DateFormatter()
-            let payload: [String: Any] = [
+            current[identifier] = [
                 "title": title,
                 "notes": reminder.notes ?? "",
                 "list": config.listName,
                 "priority": String(reminder.priority),
-                "createdDate": formatter.string(from: created)
+                "createdDate": formatter.string(from: reminder.creationDate ?? Date())
             ]
-
-            do {
-                var request = URLRequest(url: URL(string: config.endpoint)!)
-                request.httpMethod = "POST"
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-                let (_, response) = try await URLSession.shared.data(for: request)
-                guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-                    throw NSError(domain: "AriaSync", code: 2, userInfo: [NSLocalizedDescriptionKey: "Firebase 전송에 실패했어요."])
-                }
-                sent.insert(identifier)
-                saveSent(sent)
-                added += 1
-                print("↗︎ ARIA로 전송: \(title)")
-            } catch {
-                print("⚠️ '\(title)' 전송 실패: \(error.localizedDescription)")
-            }
         }
 
-        if added > 0 {
-            print("✅ 총 \(added)개 항목을 전송했어요. ARIA의 빠른 메모를 확인하세요.")
+        do {
+            var request = URLRequest(url: URL(string: config.endpoint)!)
+            request.httpMethod = "PUT"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: current, options: [.fragmentsAllowed])
+            let (_, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                throw NSError(domain: "AriaSync", code: 2, userInfo: [NSLocalizedDescriptionKey: "Firebase 전송에 실패했어요."])
+            }
+        } catch {
+            print("⚠️ 동기화 실패: \(error.localizedDescription)")
         }
     }
 }
