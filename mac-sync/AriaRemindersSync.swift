@@ -59,7 +59,15 @@ struct AriaRemindersSync {
     }
     static func fetchItems(_ config: Config) async throws -> [String: [String: Any]] {
         let root = try await request(URL(string: config.endpoint)!)
-        return (root as? [String: Any])?["items"] as? [String: [String: Any]] ?? [:]
+        guard let dict = root as? [String: Any] else { return [:] }
+        var result = dict["items"] as? [String: [String: Any]] ?? [:]
+        // Migrate records written by the earlier one-way helper (root-level EventKit IDs).
+        for (key, value) in dict where key != "items" {
+            if let item = value as? [String: Any], item["list"] as? String == "ARIA", item["title"] is String {
+                if result[key] == nil { result[key] = item }
+            }
+        }
+        return result
     }
     static func write(_ item: [String: Any], id: String, config: Config) async {
         _ = try? await request(itemURL(config, id), method: "PUT", body: item)
@@ -78,6 +86,12 @@ struct AriaRemindersSync {
             let reminders = await fetchReminders(calendar)
             let byIdentifier = Dictionary(uniqueKeysWithValues: reminders.map { ($0.calendarItemIdentifier, $0) })
             var changedState = false
+            // Preserve the old EventKit identifier as the remote ID during migration.
+            for remoteID in remote.keys where state.map[remoteID] == nil && byIdentifier[remoteID] != nil {
+                state.map[remoteID] = remoteID
+                changedState = true
+                if let item = remote[remoteID] { await write(item, id: remoteID, config: config) }
+            }
             var deletedEventIDs = Set<String>()
 
             // Previously linked items missing from the ARIA list are deletions (including items moved to Recently Deleted).
