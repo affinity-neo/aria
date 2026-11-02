@@ -966,7 +966,7 @@ function calendarBuildData(dateKeys){
 function calendarEventHtml(item){
  if(item.kind==="task-plan"||item.kind==="task-due"){
   const cls=item.kind==="task-due"?"is-task-due":"is-task-plan";
-  return '<button draggable="true" ondragstart="calendarTaskDragStart(event,\\''+item.id+':'+(item.subId||0)+'\\')" class="apple-cal-allday-item '+cls+'" onclick="calendarOpen('+item.id+','+(item.subId||0)+')" title="'+esc(item.title)+(item.kind==="task-due"?" · 마감일":" · 계획일")+'"><span class="event-dot"></span>'+esc(item.title)+'</button>';
+  return '<button draggable="true" ondragstart="calendarTaskDragStart(event,\''+item.id+':'+(item.subId||0)+'\')" class="apple-cal-allday-item '+cls+'" onclick="calendarOpen('+item.id+','+(item.subId||0)+')" title="'+esc(item.title)+(item.kind==="task-due"?" · 마감일":" · 계획일")+'"><span class="event-dot"></span>'+esc(item.title)+'</button>';
  }
  if(item.kind==="fixed")return '<span class="apple-cal-allday-item is-fixed"><span class="event-dot"></span>'+esc(item.title)+'</span>';
  const action=item.linked?'calendarOpen('+item.linked.id+','+(item.linked.subId||0)+')':'openCalendarEvent('+JSON.stringify(item.id)+')';
