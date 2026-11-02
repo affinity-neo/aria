@@ -11,7 +11,7 @@ fi
 
 APP_PATH="${TMPDIR:-/tmp}/aria-reminders-sync"
 echo "동기화 프로그램을 준비하는 중입니다..."
-if ! swiftc -o "$APP_PATH" AriaRemindersSync.swift; then
+if ! swiftc -parse-as-library -o "$APP_PATH" AriaRemindersSync.swift; then
   echo
   echo "❌ 프로그램 준비에 실패했습니다. 위 오류 내용을 확인해 주세요."
   read -p "Enter를 누르면 종료합니다."
