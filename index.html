@@ -841,10 +841,14 @@ async function appleReminderFetch(){
  try{
   const r=await fetch(appleReminderEndpoint(),{cache:'no-store'});
   if(!r.ok)throw new Error('Firebase 응답 '+r.status);
-  const data=await r.json();if(!data||typeof data!=='object')return;
+  const data=await r.json();
+  const current=data&&typeof data==='object'?data:{};
   S.quickMemos=Array.isArray(S.quickMemos)?S.quickMemos:[];
+  const liveKeys=new Set(Object.keys(current));
+  const before=S.quickMemos.length;
+  S.quickMemos=S.quickMemos.filter(n=>!(n&&n.source==='apple-reminders'&&n.appleReminderKey&&!liveKeys.has(n.appleReminderKey)&&!n.doneAt&&!n.movedToTaskId));
   let added=0;
-  for(const [key,item] of Object.entries(data)){
+  for(const [key,item] of Object.entries(current)){
    if(!item||!String(item.title||'').trim())continue;
    const title=String(item.title).trim(),created=String(item.createdDate||''),notes=String(item.notes||''),list=String(item.list||'ARIA');
    const fingerprint=[title,created,notes,list].join('\u241f');
@@ -853,7 +857,7 @@ async function appleReminderFetch(){
    S.quickMemos.unshift({id:Date.now()+added,text:title,createdAt,reviewAt:addD(Math.min(14,Math.max(1,Number((S.afterHoursSettings||{}).quickMemoReviewDays)||3))),source:'apple-reminders',appleReminderKey:key,appleReminderFingerprint:fingerprint,appleReminderNotes:notes,appleReminderPriority:String(item.priority||''),appleReminderList:list});
    added++;
   }
-  if(added){save();if(typeof V==='function'&&V()&&V().kind==='quickmemo')render();toast('Apple 미리 알림 '+added+'개를 빠른 메모로 가져왔어요.')}
+  if(added||S.quickMemos.length!==before){save();if(typeof V==='function'&&V()&&V().kind==='quickmemo')render();if(added)toast('Apple 미리 알림 '+added+'개를 빠른 메모로 가져왔어요.')}
  }catch(e){console.warn('Apple Reminders import:',e)}
  finally{appleReminderBusy=false}
 }
