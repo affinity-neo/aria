@@ -827,18 +827,19 @@ function vQuickMemo(){let notes=(S.quickMemos||[]).filter(n=>!n.doneAt&&!n.moved
 
 /* ---------- Notion <-> ARIA Quick Memo sync ---------- */
 const NOTION_MEMO_URL='https://gemini.affinityuniverse-neo.workers.dev/api/notion/memos';
-let notionMemoBusy=false,notionMemoTimer=0,notionMemoLastError='';
+let notionMemoBusy=false,notionMemoTimer=0,notionMemoLastError='',notionMemoLastSuccess=0;
 function notionMemoClientKey(){if(!S.notionMemoClientKey){const b=crypto.getRandomValues(new Uint8Array(24));S.notionMemoClientKey=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('affinityneo_v3',JSON.stringify(S))}return S.notionMemoClientKey}
 function notionMemoQueueDelete(n){if(!n)return;S.notionMemoDeletedIds=Array.isArray(S.notionMemoDeletedIds)?S.notionMemoDeletedIds:[];const id=String(n.notionAriaId||n.id);if(id&&!S.notionMemoDeletedIds.includes(id))S.notionMemoDeletedIds.push(id)}
-function notionMemoSchedule(){clearTimeout(notionMemoTimer);notionMemoTimer=setTimeout(notionMemoSync,900)}
+function notionMemoSchedule(){clearTimeout(notionMemoTimer);notionMemoTimer=setTimeout(notionMemoSync,1200)}
 async function notionMemoSync(){
  if(notionMemoBusy||!navigator.onLine)return;
  notionMemoBusy=true;
  try{
+  const pendingDeletes=[...(S.notionMemoDeletedIds||[])];
   const local=(S.quickMemos||[]).filter(n=>n&&!n.movedToTaskId).map(n=>({id:String(n.notionAriaId||n.id),text:String(n.text||''),content:String(n.notionContent||''),done:!!n.doneAt,createdAt:Number(n.createdAt)||Date.now(),updatedAt:Number(n.notionUpdatedAt)||Number(n.updatedAt)||Number(n.createdAt)||Date.now()}));
-  const r=await fetch(NOTION_MEMO_URL,{method:'POST',headers:{'Content-Type':'application/json','X-Aria-Notion-Key':notionMemoClientKey()},body:JSON.stringify({memos:local,deletedIds:S.notionMemoDeletedIds||[]}),cache:'no-store'});
+  const r=await fetch(NOTION_MEMO_URL,{method:'POST',headers:{'Content-Type':'application/json','X-Aria-Notion-Key':notionMemoClientKey()},body:JSON.stringify({memos:local,deletedIds:pendingDeletes}),cache:'no-store'});
   const data=await r.json().catch(()=>({}));
-  if(!r.ok||!data.ok)throw new Error(data.error||'Notion 동기화 오류 ('+r.status+')');
+  if(!r.ok||!data.ok)throw new Error(data.error||('Notion 동기화 오류 ('+r.status+')'));
   const byId=new Map((S.quickMemos||[]).map(n=>[String(n.notionAriaId||n.id),n]));
   let changed=false;
   for(const remote of (data.memos||[])){
@@ -846,24 +847,26 @@ async function notionMemoSync(){
    let n=byId.get(String(remote.id));
    if(!n){
     n={id:Date.now()+Math.floor(Math.random()*100000),notionAriaId:String(remote.id),text:remote.text,createdAt:Number(remote.createdAt)||Date.now(),reviewAt:addD(Math.min(14,Math.max(1,Number((S.afterHoursSettings||{}).quickMemoReviewDays)||3)))};
-    S.quickMemos.unshift(n);changed=true;
+    S.quickMemos.unshift(n);byId.set(String(remote.id),n);changed=true;
    }else{
     const localUpdated=Number(n.notionUpdatedAt)||Number(n.updatedAt)||Number(n.createdAt)||0;
     const remoteUpdated=Number(remote.updatedAt)||0;
     if(remoteUpdated>localUpdated+1500){
-     if(n.text!==remote.text||!!n.doneAt!==!!remote.doneAt){n.text=remote.text;n.doneAt=remote.doneAt?'notion-complete':'';changed=true}
-     n.notionContent=remote.content||'';n.notionUpdatedAt=remoteUpdated;
+     if(n.text!==remote.text||!!n.doneAt!==!!remote.doneAt||n.notionContent!==(remote.content||'')){n.text=remote.text;n.doneAt=remote.doneAt?'notion-complete':'';n.notionContent=remote.content||'';changed=true}
+     n.notionUpdatedAt=remoteUpdated;
     }
    }
-   n.notionAriaId=String(remote.id);n.notionPageId=remote.notionPageId||n.notionPageId;
+   if(n.notionAriaId!==String(remote.id)||n.notionPageId!==remote.notionPageId){n.notionAriaId=String(remote.id);n.notionPageId=remote.notionPageId||n.notionPageId;changed=true}
   }
-  S.notionMemoDeletedIds=[];
+  S.notionMemoDeletedIds=(S.notionMemoDeletedIds||[]).filter(id=>!pendingDeletes.includes(id));
+  if(pendingDeletes.length)changed=true;
   if(changed){localStorage.setItem('affinityneo_v3',JSON.stringify(S));lastSnap=snap();if(V()&&V().kind==='quickmemo')render()}
-  notionMemoLastError='';
+  notionMemoLastError='';notionMemoLastSuccess=Date.now();
  }catch(e){notionMemoLastError=String(e.message||e);console.warn('Notion memo sync:',e)}
  finally{notionMemoBusy=false}
 }
 function notionMemoInit(){notionMemoSync();setInterval(()=>{if(!document.hidden)notionMemoSync()},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)notionMemoSync()});addEventListener('online',notionMemoSync)}
+
 
 function quickMemoToggleComplete(id,on){let n=(S.quickMemos||[]).find(x=>x.id===id);if(!n)return;n.notionUpdatedAt=Date.now();let done=LB('status').find(x=>x.d),active=LB('status').find(x=>!x.d);if(on){if(!n.doneAt&&n.sourceTaskId){let t=find(n.sourceTaskId);if(t)n._restoreTaskState={status:t.status||'',doneAt:t.doneAt||''}}n.doneAt=today();if(n.sourceTaskId){let t=find(n.sourceTaskId);if(t){if(done)t.status=done.n;t.doneAt=today()}}}else{n.doneAt='';if(n.sourceTaskId){let t=find(n.sourceTaskId);if(t){let previous=n._restoreTaskState;t.status=previous&&previous.status?previous.status:(active?active.n:t.status);t.doneAt=previous?previous.doneAt:''}}delete n._restoreTaskState}save();notionMemoSchedule();render()}
 function quickMemoRestore(id){let n=(S.quickMemos||[]).find(x=>x.id===id);if(!n)return;if(n.movedToTaskId){let linked=find(n.movedToTaskId);if(linked&&isPersonalTask(linked)&&!n.sourceTaskId)n.sourceTaskId=linked.id;n.movedToTaskId=''}quickMemoToggleComplete(id,false)}
