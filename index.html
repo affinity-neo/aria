@@ -839,7 +839,7 @@ async function notionMemoSync(){
  try{
   const pendingDeletes=[...(S.notionMemoDeletedIds||[])];
   const local=(S.quickMemos||[]).filter(n=>n&&!n.movedToTaskId).map(n=>({id:String(n.notionAriaId||n.id),text:String(n.text||''),content:String(n.notionContent||''),notionPageId:String(n.notionPageId||''),done:!!n.doneAt,createdAt:Number(n.createdAt)||Date.now(),updatedAt:Number(n.notionUpdatedAt)||Number(n.updatedAt)||Number(n.createdAt)||Date.now()}));
-  const r=await fetch(NOTION_MEMO_URL,{method:'POST',headers:{'Content-Type':'application/json','X-Aria-Notion-Key':notionMemoClientKey()},body:JSON.stringify({memos:local,deletedIds:pendingDeletes.slice(0,15),deletedPageIds:[...(S.notionMemoDeletedPageIds||[])].slice(0,15)}),cache:'no-store'});
+  const r=await fetch(NOTION_MEMO_URL,{method:'POST',headers:{'Content-Type':'application/json','X-Aria-Notion-Key':notionMemoClientKey()},body:JSON.stringify({memos:local,deletedIds:pendingDeletes.slice(0,10),deletedPageIds:[...(S.notionMemoDeletedPageIds||[])].slice(0,10)}),cache:'no-store'});
   const data=await r.json().catch(()=>({}));
   if(!r.ok||!data.ok)throw new Error(data.error||('Notion 동기화 오류 ('+r.status+')'));
   const byId=new Map((S.quickMemos||[]).map(n=>[String(n.notionAriaId||n.id),n]));
@@ -861,7 +861,7 @@ async function notionMemoSync(){
    }
    if(n.notionAriaId!==String(remote.id)||n.notionPageId!==remote.notionPageId){n.notionAriaId=String(remote.id);n.notionPageId=remote.notionPageId||n.notionPageId;changed=true}
   }
-  S.notionMemoDeletedIds=(S.notionMemoDeletedIds||[]).filter(id=>!pendingDeletes.slice(0,15).includes(id));S.notionMemoDeletedPageIds=(S.notionMemoDeletedPageIds||[]).filter(id=>!((S.notionMemoDeletedPageIds||[]).slice(0,15)).includes(id));
+  S.notionMemoDeletedIds=(S.notionMemoDeletedIds||[]).filter(id=>!pendingDeletes.slice(0,10).includes(id));S.notionMemoDeletedPageIds=(S.notionMemoDeletedPageIds||[]).filter(id=>!((S.notionMemoDeletedPageIds||[]).slice(0,10)).includes(id));
   if(pendingDeletes.length)changed=true;
   if(changed){localStorage.setItem('affinityneo_v3',JSON.stringify(S));lastSnap=snap();if(V()&&V().kind==='quickmemo')render()}
   notionMemoLastError='';notionMemoLastSuccess=Date.now();
