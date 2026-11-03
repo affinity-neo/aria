@@ -827,12 +827,14 @@ function vQuickMemo(){let notes=(S.quickMemos||[]).filter(n=>!n.doneAt&&!n.moved
 
 /* ---------- Notion <-> ARIA Quick Memo sync ---------- */
 const NOTION_MEMO_URL='https://gemini.affinityuniverse-neo.workers.dev/api/notion/memos';
-let notionMemoBusy=false,notionMemoTimer=0,notionMemoLastError='',notionMemoLastSuccess=0;
+let notionMemoBusy=false,notionMemoTimer=0,notionMemoLastError='',notionMemoLastSuccess=0,notionMemoLockOwner='';
 function notionMemoClientKey(){if(!S.notionMemoClientKey){const b=crypto.getRandomValues(new Uint8Array(24));S.notionMemoClientKey=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('affinityneo_v3',JSON.stringify(S))}return S.notionMemoClientKey}
 function notionMemoQueueDelete(n){if(!n)return;S.notionMemoDeletedIds=Array.isArray(S.notionMemoDeletedIds)?S.notionMemoDeletedIds:[];const id=String(n.notionAriaId||n.id);if(id&&!S.notionMemoDeletedIds.includes(id))S.notionMemoDeletedIds.push(id)}
 function notionMemoSchedule(){clearTimeout(notionMemoTimer);notionMemoTimer=setTimeout(notionMemoSync,1200)}
 async function notionMemoSync(){
  if(notionMemoBusy||!navigator.onLine)return;
+ const lockKey='aria_notion_memo_sync_lock',now=Date.now();let currentLock=null;try{currentLock=JSON.parse(localStorage.getItem(lockKey)||'null')}catch(e){}if(currentLock&&currentLock.expires>now)return;
+ notionMemoLockOwner=now+'_'+Math.random().toString(36).slice(2);try{localStorage.setItem(lockKey,JSON.stringify({owner:notionMemoLockOwner,expires:now+60000}))}catch(e){}
  notionMemoBusy=true;
  try{
   const pendingDeletes=[...(S.notionMemoDeletedIds||[])];
@@ -864,7 +866,7 @@ async function notionMemoSync(){
   if(changed){localStorage.setItem('affinityneo_v3',JSON.stringify(S));lastSnap=snap();if(V()&&V().kind==='quickmemo')render()}
   notionMemoLastError='';notionMemoLastSuccess=Date.now();
  }catch(e){notionMemoLastError=String(e.message||e);console.warn('Notion memo sync:',e)}
- finally{notionMemoBusy=false}
+ finally{notionMemoBusy=false;try{const lock=JSON.parse(localStorage.getItem(lockKey)||'null');if(lock&&lock.owner===notionMemoLockOwner)localStorage.removeItem(lockKey)}catch(e){}notionMemoLockOwner=''}
 }
 function notionMemoInit(){notionMemoSync();setInterval(()=>{if(!document.hidden)notionMemoSync()},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)notionMemoSync()});addEventListener('online',notionMemoSync)}
 
