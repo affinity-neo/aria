@@ -1375,7 +1375,7 @@ function ariaGo(kind){
 (function(){
  const savedId=localStorage.getItem('affinityneo_active_view_v1');
  const legacyView=S.views.find(v=>String(v.id)===String(savedId));
- const storedScreen=localStorage.getItem('affinityneo_screen_v1')||(legacyView?legacyView.kind:'today'),last=storedScreen==='ai'?'today':storedScreen;
+ const last='today';localStorage.setItem('affinityneo_screen_v1','today');
  if(last==='ai'){
   if(window.innerWidth<=760)ariaMobileSetActive('ai');
   ariaGo('ai');
