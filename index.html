@@ -1133,7 +1133,8 @@ let out=[];
 tasks.forEach(t=>{
  if(isD(t))return;
  const parentExcluded=isAfterHoursTask(t),parentTitle=String(t.task||'').replace(/📌/g,'').trim();
- if(!parentExcluded&&!isPinnedTask(t)&&String(t.task||'').trim()){out.push({id:t.id,task:t.task,parentTitle:'',company:t.company,person:t.person||taskAssignees(t).join(', '),planDate:t.cx&&t.cx.planDate||'',due:t.due||'',priority:t.priority||'보통',estimateMin:Number(t.cx&&t.cx.estimateMin)||0,status:t.status||'',memo:t.memo||'',isSub:false})}
+ if(parentExcluded)return;
+ if(!isPinnedTask(t)&&String(t.task||'').trim()){out.push({id:t.id,task:t.task,parentTitle:'',company:t.company,person:t.person||taskAssignees(t).join(', '),planDate:t.cx&&t.cx.planDate||'',due:t.due||'',priority:t.priority||'보통',estimateMin:Number(t.cx&&t.cx.estimateMin)||0,status:t.status||'',memo:t.memo||'',isSub:false})}
  (t.subs||[]).forEach(sub=>{
   if(isD(sub)||isDeletedSubtask(t,sub)||!String(sub.task||'').trim())return;
   out.push({id:t.id,subId:sub.id,task:sub.task,parentTitle,company:t.company,person:sub.person||t.person||'',planDate:sub.planDate||(sub.cx&&sub.cx.planDate)||'',due:sub.due||'',priority:sub.priority||t.priority||'보통',estimateMin:Number(sub.estimateMin)||0,status:sub.status||'',memo:sub.memo||t.memo||'',isSub:true});
