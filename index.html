@@ -556,6 +556,32 @@ td{height:34px!important}
  margin:0!important;padding:0 4px!important;box-sizing:border-box!important;
  border:0!important;border-radius:0!important;white-space:normal!important;
 }
+
+/* Dark theme: keep the overall workload summary and quick stats theme-aware. */
+[data-theme="dark"] .capacity-card.capacity-dashboard{
+ background:linear-gradient(115deg,var(--sf2),var(--sf))!important;
+ border-color:var(--line)!important;
+ color:var(--tx)!important;
+}
+[data-theme="dark"] .capacity-dashboard .capacity-copy>b,
+[data-theme="dark"] .capacity-dashboard .capacity-copy>span,
+[data-theme="dark"] .capacity-dashboard .capacity-labels,
+[data-theme="dark"] .capacity-dashboard .capacity-labels b,
+[data-theme="dark"] .capacity-dashboard .capacity-remaining span{color:var(--tx)!important}
+[data-theme="dark"] .capacity-dashboard .capacity-copy>b small{color:var(--mu)!important}
+[data-theme="dark"] .capacity-dashboard .capacity-track{background:var(--line)!important}
+[data-theme="dark"] .table-quickstats>div,
+[data-theme="dark"] .table-quickstats>.quickstat-action{
+ background:var(--sf)!important;
+ border-color:var(--line)!important;
+ color:var(--tx)!important;
+}
+[data-theme="dark"] .table-quickstats b,
+[data-theme="dark"] .table-quickstats span,
+[data-theme="dark"] .quickstat-action b,
+[data-theme="dark"] .quickstat-action span{color:var(--tx)!important}
+[data-theme="dark"] .table-quickstats span,
+[data-theme="dark"] .quickstat-action span{color:var(--mu)!important}
 </style></head><body>
 <div class="integrated-shell">
 <aside class="aria-side" aria-label="Aria 메뉴">
@@ -841,7 +867,7 @@ function vAfterHoursLegacy(){
 function openAfterHoursTask(id,type){
  const t=id?find(id):null;if(t&&isCourseTask(t)){openCourseDetails(id);return}
  const focus=(t&&t.cx&&t.cx.focusType)||type||'개인';
- modal('<div class="afterhours-edit"><h2>'+(t?'개인 일정 수정':'개인 일정 추가')+'</h2><label>할 일 이름<input id="ahName" class="inp" value="'+esc(t&&t.task||'')+'" placeholder="예: 바이브 코딩 기능 수정"></label><label>분류<select id="ahType" class="inp">'+S.personalGroups.map(g=>'<option value="'+esc(g.name)+'" '+(focus===g.name?'selected':'')+' >'+esc(g.name)+'</option>').join('')+'</select></label><div class="afterhours-edit-grid"><label>계획<input id="ahPlan" class="inp" type="date" value="'+esc(t&&t.cx&&t.cx.planDate||'')+'"></label><label>마감일<input id="ahDue" class="inp" type="date" value="'+esc(t&&t.due||'')+'"></label><label>우선순위<select id="ahPriority" class="inp">'+LB('priority').map(p=>'<option value="'+esc(p.n)+'" '+((t&&t.priority||'보통')===p.n?'selected':'')+'>'+esc(p.n)+'</option>').join('')+'</select></label><label>예상 시간(분)<input id="ahEstimate" class="inp" type="number" min="0" step="5" value="'+Number(t&&t.cx&&t.cx.estimateMin||0)+'"></label></div><label>메모<textarea id="ahMemo" class="inp" rows="3">'+esc(t&&t.memo||'')+'</textarea></label><p class="afterhours-help">계획은 실제로 손댈 날짜예요. 외부에서 정한 기한이 없다면 마감일은 비워 두세요.</p><div class="ma">'+(t?'<button onclick="movePersonalTaskToWork('+id+')">업무 관리로 이동</button>':'')+'<button onclick="closeM()">취소</button><button class="primary" onclick="saveAfterHoursTask('+(id||0)+')">저장</button></div></div>');
+ modal('<div class="afterhours-edit"><h2>'+(t?'개인 일정 수정':'개인 일정 추가')+'</h2><label>할 일 이름<input id="ahName" class="inp" value="'+esc(t&&t.task||'')+'" placeholder="예: 바이브 코딩 기능 수정"></label><label>분류<select id="ahType" class="inp">'+S.personalGroups.map(g=>'<option value="'+esc(g.name)+'" '+(focus===g.name?'selected':'')+' >'+esc(g.name)+'</option>').join('')+'</select></label><div class="afterhours-edit-grid"><label>계획<input id="ahPlan" class="inp" type="date" value="'+esc(t&&t.cx&&t.cx.planDate||'')+'"></label><label>마감일<input id="ahDue" class="inp" type="date" value="'+esc(t&&t.due||'')+'"></label><label>우선순위<select id="ahPriority" class="inp">'+LB('priority').map(p=>'<option value="'+esc(p.n)+'" '+((t&&t.priority||'보통')===p.n?'selected':'')+'>'+esc(p.n)+'</option>').join('')+'</select></label><label>예상 시간(분)<input id="ahEstimate" class="inp" type="number" min="0" step="5" value="'+Number(t&&t.cx&&t.cx.estimateMin||0)+'"></label></div><label>메모<textarea id="ahMemo" class="inp" rows="3">'+esc(t&&t.memo||'')+'</textarea></label><p class="afterhours-help">계획은 실제로 손댈 날짜예요. 외부에서 정한 기한이 없다면 마감일은 비워 두세요.</p><div class="ma">'+(t?'<button onclick="movePersonalTaskToWork('+id+')">업무 관리로 이동</button><button class="danger" onclick="deletePersonalTask('+id+')">삭제</button>':'')+'<button onclick="closeM()">취소</button><button class="primary" onclick="saveAfterHoursTask('+(id||0)+')">저장</button></div></div>');
 }
 function addPersonalGroup(){ask('새 개인 카테고리 이름','',v=>{if(S.personalGroups.some(g=>g.name===v)){toast('같은 개인 카테고리가 있어요.');return}S.personalGroups.push({name:v,color:PAL[(S.personalGroups.length*3+2)%PAL.length]});save();render()})}
 function editPersonalGroup(index){const group=S.personalGroups[index];if(!group)return;ask('개인 카테고리 이름 수정',group.name,value=>{const name=String(value||'').trim();if(!name||name===group.name)return;if(S.personalGroups.some((g,i)=>i!==index&&g.name===name)){toast('같은 개인 카테고리가 이미 있어요.');return}const old=group.name;group.name=name;S.tasks.forEach(t=>{if(t.personalGroup===old)t.personalGroup=name;if(t.cx&&t.cx.focusType===old)t.cx.focusType=name});save();render();toast('개인 카테고리 이름을 수정했어요.')})}
@@ -849,6 +875,14 @@ function moveWorkTaskToPersonal(id){const t=find(id);if(!t)return;modal('<div cl
 function confirmWorkToPersonal(id){const t=find(id),group=S.personalGroups.find(g=>g.name===$('workToPersonalGroup').value);if(!t||!group)return;t.boardScope='personal';t.personalGroup=group.name;t.cx=t.cx||{};t.cx.focusType=group.name;closeM();save();const v=S.views.find(x=>x.kind==='afterhours');if(v)setView(v.id);else render();toast('개인 일정으로 이동했어요. 기존 업무 카테고리는 보존되어 있어요.')}
 function movePersonalTaskToWork(id){const t=find(id);if(!t)return;const current=S.groups.find(g=>g.name===t.company)||S.groups[0];modal('<div class="afterhours-edit"><h2>업무 관리로 이동</h2><p class="mu">업무 보드에서 사용할 카테고리를 선택해 주세요.</p><label>업무 카테고리<select id="personalToWorkGroup" class="inp">'+S.groups.map(g=>'<option value="'+esc(g.name)+'" '+(current&&current.name===g.name?'selected':'')+'>'+esc(g.name)+'</option>').join('')+'</select></label><div class="ma"><button onclick="closeM()">취소</button><button class="primary" onclick="confirmPersonalToWork('+id+')">이동</button></div></div>')}
 function confirmPersonalToWork(id){const t=find(id),group=S.groups.find(g=>g.name===$('personalToWorkGroup').value);if(!t||!group)return;t.company=group.name;t.boardScope='work';t.personalGroup='';t.cx=t.cx||{};t.cx.focusType='운영';closeM();save();const v=S.views.find(x=>x.kind==='table');if(v)setView(v.id);else render();toast('업무 관리로 이동했어요.')}
+function deletePersonalTask(id){
+ const t=find(id);
+ if(!t||!isAfterHoursTask(t))return;
+ cf('이 개인 일정을 삭제할까요?',()=>{
+  S.tasks=S.tasks.filter(x=>x.id!==id);
+  save();closeM();render();toast('개인 일정을 삭제했어요.');
+ });
+}
 function saveAfterHoursTask(id){
  const name=$('ahName').value.trim(),focus=$('ahType').value;if(!name){toast('할 일 이름을 입력해 주세요.');return}
  let t=id?find(id):null;if(!t){const status=LB('status').find(x=>!x.d)||LB('status')[0];t={id:Date.now(),company:'개인',boardScope:'personal',personalGroup:focus,task:name,status:status?status.n:'진행 전',priority:'보통',person:'',due:'',memo:'',subs:[],cx:{}};S.tasks.push(t)}
