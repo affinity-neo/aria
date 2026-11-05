@@ -1316,7 +1316,7 @@ if(SY.localT!==t0){again=true}
 else if((rem.t||0)>SY.localT){
  if(!rd.tasks.length&&S.tasks.length){SY.localT=Math.max(Date.now(),SY.seenT+1);syMeta();await syPush()}
  else if(syEditing()){/* typing now: apply on next check */}
- else{applyRemote(rd,rem.t);toast('더 최근에 수정된 기기의 내용으로 동기화했어요.')}}
+ else{const remoteDeleted=new Set((rd.deletedTaskIds||[]).map(String)),needsTombstonePush=(S.deletedTaskIds||[]).some(id=>!remoteDeleted.has(String(id)));applyRemote(rd,rem.t);if(needsTombstonePush){SY.localT=Math.max(Date.now(),Number(rem.t||0)+1);syMeta();await syPush()}toast('더 최근에 수정된 기기의 내용으로 동기화했어요.')}}
 else if(SY.localT>(rem.t||0)){
  if(!S.tasks.length&&rd.tasks.length)throw new Error('이 기기의 업무가 비어 있어서 올리지 않았어요. (클라우드 데이터 보호)');
  await syPush()}
