@@ -909,7 +909,7 @@ function saveAfterHoursTask(id){
  save();closeM();render();toast('업무 외 시간 목록에 저장했어요.');
 }
 
-function vQuickMemo(){let notes=(S.quickMemos||[]).filter(n=>!n.doneAt&&!n.movedToTaskId);let rows=notes.map(n=>'<article class="quickmemo-item"><input class="quickmemo-check" type="checkbox" aria-label="완료 표시" onchange="quickMemoToggleComplete('+n.id+',this.checked)"><textarea aria-label="메모 수정" rows="1" onblur="quickMemoSave('+n.id+',this.value)" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\'">'+esc(n.text)+'</textarea><div class="quickmemo-actions"><button onclick="openQuickMemoMove('+n.id+')">업무로 옮기기</button><button class="quickmemo-delete" onclick="quickMemoDelete('+n.id+')" title="메모 삭제">×</button></div></article>').join('');return '<section class="quickmemo-view"><div class="quickmemo-head"><div><h2>빠른 메모</h2><p>체크하면 완료 보드로 이동하고, 업무가 되면 속성을 입력해 업무 관리로 옮길 수 있어요.</p></div><div style="display:flex;align-items:center;gap:8px"><span>'+notes.length+'개</span></div></div><form class="quickmemo-add" onsubmit="event.preventDefault();quickMemoAdd()"><input id="quickMemoInput" maxlength="240" placeholder="떠오른 생각이나 간단한 할 일 적기…" autocomplete="off"><button class="primary" type="submit">추가</button></form><div class="quickmemo-list">'+(rows||'<div class="quickmemo-empty">아직 메모가 없어요. 생각나는 내용을 편하게 적어보세요.</div>')+'</div></section>'}
+function vQuickMemo(){let notes=(S.quickMemos||[]).filter(n=>!n.doneAt&&!n.movedToTaskId);let rows=notes.map(n=>'<article class="quickmemo-item"><input class="quickmemo-check" type="checkbox" aria-label="완료 표시" onchange="quickMemoToggleComplete('+n.id+',this.checked)"><textarea aria-label="메모 수정" rows="1" onblur="quickMemoSave('+n.id+',this.value)" oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\'">'+esc(n.text)+'</textarea><div class="quickmemo-actions"><button onclick="openQuickMemoMove('+n.id+')">업무로 옮기기</button><button class="quickmemo-delete" onclick="quickMemoDelete('+n.id+')" title="메모 삭제">×</button></div></article>').join('');return '<section class="quickmemo-view"><div class="quickmemo-head"><div><h2>빠른 메모</h2><p>체크하면 완료 보드로 이동하고, 업무가 되면 속성을 입력해 업무 관리로 옮길 수 있어요.</p></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span>'+notes.length+'개</span><span class="mu" title="'+esc(notionMemoLastError||'')+'">'+(notionMemoLastError?'Notion 동기화 오류':notionMemoBusy?'Notion 동기화 중':notionMemoLastSuccess?'Notion 동기화됨':'Notion 연결 확인 중')+'</span><button type="button" onclick="notionMemoSync()">지금 동기화</button></div></div><form class="quickmemo-add" onsubmit="event.preventDefault();quickMemoAdd()"><input id="quickMemoInput" maxlength="240" placeholder="떠오른 생각이나 간단한 할 일 적기…" autocomplete="off"><button class="primary" type="submit">추가</button></form><div class="quickmemo-list">'+(rows||'<div class="quickmemo-empty">아직 메모가 없어요. 생각나는 내용을 편하게 적어보세요.</div>')+'</div></section>'}
 
 /* ---------- Notion <-> ARIA Quick Memo sync ---------- */
 const NOTION_MEMO_URL='https://gemini.affinityuniverse-neo.workers.dev/api/notion/memos';
@@ -943,7 +943,7 @@ async function notionMemoSync(){
     S.quickMemos.unshift(n);byId.set(String(remote.id),n);changed=true;
    }else{
     const localUpdated=Number(n.notionUpdatedAt)||Number(n.updatedAt)||Number(n.createdAt)||0;
-    const remoteUpdated=Number(remote.updatedAt)||0;
+    const remoteUpdated=Number.isFinite(Number(remote.updatedAt))&&Number(remote.updatedAt)>0?Number(remote.updatedAt):Date.parse(remote.updatedAt)||0;
     if(remoteUpdated>localUpdated+1500){
      if(n.text!==String(remote.title||remote.text||'')||!!n.doneAt!==!!remote.doneAt||n.notionContent!==(remote.content||'')){n.text=String(remote.title||remote.text||'');n.doneAt=remote.doneAt?'notion-complete':'';n.notionContent=remote.content||'';changed=true}
      n.notionUpdatedAt=remoteUpdated;
@@ -953,10 +953,10 @@ async function notionMemoSync(){
   }
   S.notionMemoDeletedIds=(S.notionMemoDeletedIds||[]).filter(id=>!pendingDeletes.slice(0,10).includes(id));S.notionMemoDeletedPageIds=(S.notionMemoDeletedPageIds||[]).filter(id=>!((S.notionMemoDeletedPageIds||[]).slice(0,10)).includes(id));
   if(pendingDeletes.length)changed=true;
-  if(changed){localStorage.setItem('affinityneo_v3',JSON.stringify(S));lastSnap=snap();if(V()&&V().kind==='quickmemo')render()}
+  if(changed){localStorage.setItem('affinityneo_v3',JSON.stringify(S));lastSnap=snap();syncTouch();if(V()&&V().kind==='quickmemo')render()}
   notionMemoLastError='';notionMemoLastSuccess=Date.now();
  }catch(e){notionMemoLastError=String(e.message||e);console.warn('Notion memo sync:',e)}
- finally{notionMemoBusy=false;try{const lock=JSON.parse(localStorage.getItem(lockKey)||'null');if(lock&&lock.owner===notionMemoLockOwner)localStorage.removeItem(lockKey)}catch(e){}notionMemoLockOwner=''}
+ finally{notionMemoBusy=false;try{const lock=JSON.parse(localStorage.getItem(lockKey)||'null');if(lock&&lock.owner===notionMemoLockOwner)localStorage.removeItem(lockKey)}catch(e){}notionMemoLockOwner='';if(V()&&V().kind==='quickmemo')render()}
 }
 function notionMemoInit(){notionMemoSync();setInterval(()=>{if(!document.hidden)notionMemoSync()},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)notionMemoSync()});addEventListener('online',notionMemoSync)}
 
@@ -1132,8 +1132,8 @@ function dashboardWorkEntries(tasks){
 let out=[];
 tasks.forEach(t=>{
  if(isD(t))return;
- const parentExcluded=isAfterHoursTask(t),parentTitle=String(t.task||'').replace(/📌/g,'').trim();
- if(parentExcluded)return;
+ const parentExcluded=isAfterHoursTask(t),parkedParent=['홀딩','비수익'].includes((t.cx||{}).focusType||''),parentTitle=String(t.task||'').replace(/📌/g,'').trim();
+ if(parentExcluded||parkedParent)return;
  if(!isPinnedTask(t)&&String(t.task||'').trim()){out.push({id:t.id,task:t.task,parentTitle:'',company:t.company,person:t.person||taskAssignees(t).join(', '),planDate:t.cx&&t.cx.planDate||'',due:t.due||'',priority:t.priority||'보통',estimateMin:Number(t.cx&&t.cx.estimateMin)||0,status:t.status||'',memo:t.memo||'',isSub:false})}
  (t.subs||[]).forEach(sub=>{
   if(isD(sub)||isDeletedSubtask(t,sub)||!String(sub.task||'').trim())return;
@@ -1145,7 +1145,7 @@ return out;
 function openDashboardSubtask(id,sid){let v=S.views.find(x=>x.kind==='table');if(!v)return;open.add(id);setView(v.id);requestAnimationFrame(()=>requestAnimationFrame(()=>{let el=document.querySelector('[data-sub="'+id+':'+sid+'"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('task-focus');setTimeout(()=>el.classList.remove('task-focus'),2200)}}))}
 function vToday(){
 const T=today(),all=S.tasks.filter(t=>!isD(t)),waiting=all.filter(isWaitingTask),waitDue=waiting.filter(t=>(t.nextRemind||addD(workIntervalFor(t)))<=T),course=all.filter(isCourseTask).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.cx.planDate||'9999').localeCompare(b.cx.planDate||'9999')),personalSchedule=all.filter(isAfterHoursTask).sort((a,b)=>String((a.cx||{}).planDate||a.due||'9999').localeCompare(String((b.cx||{}).planDate||b.due||'9999')));
-const act=all.filter(t=>!isPersonalTask(t)&&!isCourseTask(t)&&!isWaitingTask(t)&&!isPinnedWaiting(t)),entries=executionOrdered(dashboardWorkEntries(all));
+const act=all.filter(t=>!isPersonalTask(t)&&!isCourseTask(t)&&!isWaitingTask(t)&&!isPinnedWaiting(t)&&!['홀딩','비수익'].includes((t.cx||{}).focusType||'')),entries=executionOrdered(dashboardWorkEntries(all));
 const todayPlan=entries.filter(x=>x.planDate===T),todayDeadline=entries.filter(x=>x.due===T),planLate=entries.filter(x=>x.planDate&&x.planDate<T),dueLate=entries.filter(x=>x.due&&x.due<T),weekDates=Array.from({length:4},(_,i)=>addD(i-1)),week=entries.filter(x=>weekDates.includes(x.planDate)),weekRankMap=new Map(weekDates.flatMap(day=>executionOrdered(week.filter(x=>x.planDate===day)).map((x,i)=>[executionKey(x),i+1])));
 const taskCard=(x,kind)=>'<button class="dash-task '+(kind||'')+'" draggable="true" ondragstart="executionDragStart(event,\''+executionKey(x)+'\')" ondragover="executionDragOver(event)" ondrop="executionDrop(event,\''+executionKey(x)+'\')" ondragend="executionDragEnd()" onclick="'+(x.isSub?'openDashboardSubtask('+x.id+','+x.subId+')':'calendarOpen('+x.id+')')+'"><span class="exec-rank">' +weeklyExecutionRank(x)+'</span><span class="dash-task-main"><span class="dash-task-titleline"><b>'+(x.isSub?'<span class="dash-parent-label">'+esc(x.parentTitle)+' › </span>':'')+esc(x.task)+'</b>'+(x.person?'<small class="dash-assignee">'+esc(x.person)+'</small>':'')+'</span></span><span class="dash-task-meta">'+(x.planDate?'<small>계획 '+dateShort(x.planDate)+'</small>':'')+(x.due?'<small>마감 '+dateShort(x.due)+'</small>':'')+'</span><span class="dash-arrow">›</span></button>';
 const section=(title,items,empty,cls)=>'<section class="dash-section '+((cls==='deadline-today'&&!items.length)?'':(cls||''))+'"><div class="dash-section-head"><h3>'+title+'</h3><span class="dash-count">'+items.length+'</span></div><div class="dash-list">'+(items.length?items.map(x=>taskCard(x)).join(''):'<div class="dash-empty">'+empty+'</div>')+'</div></section>';
