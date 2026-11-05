@@ -1252,7 +1252,7 @@ if(SY.localT!==t0){again=true}
 else if((rem.t||0)>SY.localT){
  if(!rd.tasks.length&&S.tasks.length){SY.localT=Math.max(Date.now(),SY.seenT+1);syMeta();await syPush()}
  else if(syEditing()){/* typing now: apply on next check */}
- else{const localNow=snap(),baseline=localStorage.getItem('affinityneo_synced_snapshot'),hasSaved=syStartupHasLocal||!!baseline,changedLocally=baseline?localNow!==baseline:(syStartupHasLocal?localNow!==JSON.stringify(rd):localNow!==syStartupSnapshot);if(changedLocally&&S.tasks.length&&rd.tasks.length){localStorage.setItem('affinityneo_sync_conflict',JSON.stringify({local:localNow,remote:rd,remoteT:rem.t,detectedAt:Date.now()}));throw new Error('양쪽 기기에서 변경된 내용이 있어 자동 덮어쓰기를 중단했어요. 동기화 창에서 선택해 주세요.')}applyRemote(rd,rem.t);toast('다른 기기의 변경이 반영됐어요')}}
+ else{const localNow=snap(),baseline=localStorage.getItem('affinityneo_synced_snapshot'),changedLocally=baseline?localNow!==baseline:(syStartupHasLocal?(localNow!==syStartupSnapshot||syStartupSnapshot!==JSON.stringify(rd)):localNow!==syStartupSnapshot);if(changedLocally&&S.tasks.length&&rd.tasks.length){localStorage.setItem('affinityneo_sync_conflict',JSON.stringify({local:localNow,remote:rd,remoteT:rem.t,detectedAt:Date.now()}));throw new Error('양쪽 기기에서 변경된 내용이 있어 자동 덮어쓰기를 중단했어요. 동기화 창에서 선택해 주세요.')}applyRemote(rd,rem.t);toast('다른 기기의 변경이 반영됐어요')}}
 else if(SY.localT>(rem.t||0)){
  if(!S.tasks.length&&rd.tasks.length)throw new Error('이 기기의 업무가 비어 있어서 올리지 않았어요. (클라우드 데이터 보호)');
  await syPush()}
