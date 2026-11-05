@@ -1382,7 +1382,7 @@ function ariaGo(kind){
  }else if(last==='settings'){
   ariaGo('settings');
  }else{
-  const savedView=legacyView||S.views.find(v=>v.kind===last)||S.views.find(v=>v.kind==='today');
+  const savedView=S.views.find(v=>v.kind==='today');
   if(savedView){if(window.innerWidth<=760)ariaMobileSetActive(savedView.kind);setView(savedView.id);}
   else ariaGo('today');
  }
